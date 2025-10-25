@@ -1,0 +1,174 @@
+---
+alwaysApply: true
+---
+
+# Construction Business Expense Tracker - Cursor Rules
+
+## Project Overview
+
+This is a Progressive Web App (PWA) for construction business expense and income tracking built with Nuxt 4, Firebase, and modern UI components. The app is optimized for mobile-first design with receipt photo processing and financial management capabilities.
+
+## Tech Stack & Architecture
+
+### Core Framework
+
+- **Nuxt 4+** (latest stable version with Turbo Mode)
+- **Vue 3.3+** with Composition API
+- **TypeScript** for type safety
+- **PWA** capabilities for mobile installation
+- **Nuxt/VueUse** for any functionality that exists on their library
+- **Nuxt/UI** as the primary UI component library
+
+### UI & Design System
+
+- **Nuxt/UI v4+** as the primary UI component library
+- **Tailwind CSS** for styling but please follow Nuxt UI standard
+- **Modern Card Layout** design pattern
+- **Mobile-first** responsive design
+- **Professional but modern** aesthetic
+- **Accent colors** for financial categories
+- **Dark/Light mode** support for different lighting conditions
+
+### Backend & Services
+
+- **Firebase Authentication** for user management
+- **Firestore** for real-time financial data
+- **Firebase Storage** for receipt images (5-year auto-delete)
+- **Firebase Functions** for receipt OCR processing
+- **Firebase Hosting** for deployment
+
+## Core Features
+
+### Receipt Processing
+
+- **Camera integration** for receipt photos
+- **OCR processing** to extract expense data
+- **Automatic categorization** of expenses
+- **Multi-item splitting** from single receipts
+- **Credit card number detection** from receipts
+
+### Financial Management
+
+- **Manual expense/income entry** as fallback
+- **Project-based budgeting** with spending limits
+- **Account tracking** (credit cards, debit cards, bank accounts, loans)
+- **Real-time budget monitoring** with "Amount left to spend"
+- **5-year auto-delete** policy for receipt images
+
+### Reporting & Analytics
+
+- **Time-based reports** (year, month, day, custom)
+- **Category breakdown** analysis
+- **Payment source tracking** by account
+- **Income vs expense** comparisons
+- **Project budget** performance tracking
+
+## Development Guidelines
+
+### Component Guidelines
+
+1. **Always use Nuxt/UI components** as the foundation
+2. **Create custom components** for financial-specific features
+3. **Use TypeScript interfaces** for all financial data structures
+4. **Follow Vue 3 Composition API** patterns
+5. **Implement proper error handling** for financial operations
+6. **Leverage already made VueUse composable** to unnecessary code
+
+### Firebase Integration
+
+1. **Use Firebase composables** for authentication state
+2. **Implement proper error handling** for all Firebase operations
+3. **Use TypeScript interfaces** for Firestore document types
+4. **Implement offline-first** data patterns for financial data
+5. **Use Firebase Security Rules** for financial data protection
+6. **Implement auto-delete** for receipt images after 5 years
+
+### PWA Requirements
+
+1. **Service Worker** for offline functionality
+2. **App manifest** for installation prompts
+3. **Responsive design** for all screen sizes
+4. **Touch-friendly** interface elements
+5. **Fast loading** and smooth animations
+6. **Camera access** for receipt photos
+
+### Design System
+
+1. **Card-based Layout** for financial data display
+2. **Category color coding** for expense types
+3. **Progress indicators** for budget tracking
+4. **Professional typography** for financial data
+5. **Consistent spacing** using Tailwind utilities
+6. **Dark/Light mode** toggle for different environments
+
+### Mobile-First Approach
+
+1. **Touch targets** minimum 44px
+2. **Swipe gestures** for navigation
+3. **Pull-to-refresh** functionality
+4. **Bottom navigation** for primary actions
+5. **Responsive typography** scaling
+6. **Camera integration** for receipt capture
+
+## Financial Data Models
+
+### Expense Interface
+
+```typescript
+interface IExpense {
+  id: string;
+  amount: number;
+  category: string;
+  projectId: string;
+  accountId: string;
+  receiptImageUrl?: string;
+  description: string;
+  date: Date;
+  isManualEntry: boolean;
+  ocrData?: IOcrResult;
+}
+```
+
+### Project Interface
+
+```typescript
+interface IProject {
+  id: string;
+  name: string;
+  budget: number;
+  spent: number;
+  startDate: Date;
+  endDate?: Date;
+  status: "active" | "completed" | "paused";
+}
+```
+
+### Account Interface
+
+```typescript
+interface IAccount {
+  id: string;
+  name: string;
+  type: "credit" | "debit" | "bank" | "loan";
+  lastFourDigits?: string;
+  isActive: boolean;
+}
+```
+
+## Security & Privacy
+
+- **Financial data encryption** in transit and at rest
+- **Receipt image security** with automatic deletion
+- **User data isolation** per account
+- **Secure OCR processing** without data retention
+- **GDPR compliance** for data handling
+
+## Performance Optimization
+
+- **Lazy loading** for receipt images
+- **Image compression** for storage efficiency
+- **Offline data sync** for financial records
+- **Efficient OCR processing** with queuing
+- **Cached financial calculations** for reports
+
+Remember: Always prioritize financial data accuracy, use Nuxt/UI components, and maintain a professional aesthetic suitable for business financial management with dark/light mode support.
