@@ -59,6 +59,29 @@
           <UButton type="submit" block :loading="loading">
             Create Account
           </UButton>
+
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div
+                class="w-full border-t border-gray-300 dark:border-gray-600"
+              />
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-white dark:bg-gray-800 text-gray-500"
+                >Or continue with</span
+              >
+            </div>
+          </div>
+
+          <UButton
+            @click="onGoogleSignIn"
+            :loading="googleLoading"
+            variant="outline"
+            block
+            icon="i-simple-icons-google"
+          >
+            Sign up with Google
+          </UButton>
         </UForm>
 
         <template #footer>
@@ -86,7 +109,7 @@ definePageMeta({
   middleware: "guest",
 });
 
-const { signup } = useAppAuth();
+const { signup, signInWithGoogle } = useAppAuth();
 const router = useRouter();
 
 const schema = z
@@ -109,7 +132,10 @@ const formState = reactive({
 });
 
 const loading = ref(false);
+const googleLoading = ref(false);
 const error = ref("");
+
+const route = useRoute();
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   loading.value = true;
@@ -121,7 +147,25 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     error.value = result.error;
     loading.value = false;
   } else {
-    await router.push("/");
+    // Redirect to the page user was trying to access, or dashboard
+    const redirectTo = (route.query.redirect as string) || "/";
+    await router.push(redirectTo);
+  }
+};
+
+const onGoogleSignIn = async () => {
+  googleLoading.value = true;
+  error.value = "";
+
+  const result = await signInWithGoogle();
+
+  if (result.error) {
+    error.value = result.error;
+    googleLoading.value = false;
+  } else {
+    // Redirect to the page user was trying to access, or dashboard
+    const redirectTo = (route.query.redirect as string) || "/";
+    await router.push(redirectTo);
   }
 };
 </script>

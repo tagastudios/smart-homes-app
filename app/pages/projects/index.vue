@@ -236,6 +236,7 @@ import type { IProject, IProjectForm } from "~/types";
 
 definePageMeta({
   middleware: "auth",
+  ssr: false,
 });
 
 const {

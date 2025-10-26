@@ -185,6 +185,7 @@ import type { IAccount, IAccountForm } from "~/types";
 
 definePageMeta({
   middleware: "auth",
+  ssr: false,
 });
 
 const {
