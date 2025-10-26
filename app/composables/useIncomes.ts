@@ -65,8 +65,11 @@ export const useIncomes = () => {
     try {
       const docRef = await addDoc(incomesCollection.value, incomeData as any);
       return { id: docRef.id, error: null };
-    } catch (error: any) {
-      return { id: null, error: error.message };
+    } catch (error: unknown) {
+      return {
+        id: null,
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -86,8 +89,10 @@ export const useIncomes = () => {
 
       await updateDoc(doc(incomesCollection.value, id), updateData);
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -97,8 +102,10 @@ export const useIncomes = () => {
     try {
       await deleteDoc(doc(incomesCollection.value, id));
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 

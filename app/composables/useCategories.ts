@@ -79,8 +79,11 @@ export const useCategories = () => {
         categoryData as any
       );
       return { id: docRef.id, error: null };
-    } catch (error: any) {
-      return { id: null, error: error.message };
+    } catch (error: unknown) {
+      return {
+        id: null,
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -91,8 +94,10 @@ export const useCategories = () => {
     try {
       await updateDoc(doc(categoriesCollection.value, id), updates as any);
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -103,8 +108,10 @@ export const useCategories = () => {
     try {
       await deleteDoc(doc(categoriesCollection.value, id));
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 

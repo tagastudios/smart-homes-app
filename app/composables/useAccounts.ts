@@ -48,8 +48,11 @@ export const useAccounts = () => {
     try {
       const docRef = await addDoc(accountsCollection.value, accountData);
       return { id: docRef.id, error: null };
-    } catch (error: any) {
-      return { id: null, error: error.message };
+    } catch (error: unknown) {
+      return {
+        id: null,
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -62,8 +65,10 @@ export const useAccounts = () => {
         updatedAt: new Date(),
       });
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -73,8 +78,10 @@ export const useAccounts = () => {
     try {
       await deleteDoc(doc(accountsCollection.value, id));
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 

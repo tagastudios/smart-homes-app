@@ -67,8 +67,11 @@ export const useProjects = () => {
     try {
       const docRef = await addDoc(projectsCollection.value, projectData as any);
       return { id: docRef.id, error: null };
-    } catch (error: any) {
-      return { id: null, error: error.message };
+    } catch (error: unknown) {
+      return {
+        id: null,
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -81,8 +84,10 @@ export const useProjects = () => {
         updatedAt: serverTimestamp(),
       } as any);
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -92,8 +97,10 @@ export const useProjects = () => {
     try {
       await deleteDoc(doc(projectsCollection.value, id));
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -111,8 +118,10 @@ export const useProjects = () => {
         updatedAt: serverTimestamp(),
       } as any);
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 

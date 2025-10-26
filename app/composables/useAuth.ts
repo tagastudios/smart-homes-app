@@ -1,41 +1,33 @@
+import { useCurrentUser } from "vuefire";
 import {
+  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut as firebaseSignOut,
-  getAuth,
-  onAuthStateChanged,
-  type User,
+  signInWithPopup,
+  GoogleAuthProvider,
 } from "firebase/auth";
 import type { IUser } from "~/types";
 
 export const useAppAuth = () => {
-  const auth = getAuth();
+  const user = useCurrentUser(); // VueFire's reactive user
   const router = useRouter();
-  const currentUser = ref<User | null>(auth.currentUser);
-  const isInitialized = ref(false);
+  const auth = getAuth();
 
-  // Initialize auth state
-  if (!isInitialized.value) {
-    onAuthStateChanged(auth, (user) => {
-      currentUser.value = user;
-      isInitialized.value = true;
-    });
-  }
-
-  const user = computed(() => {
-    if (!currentUser.value) return null;
+  const appUser = computed(() => {
+    if (!user.value) return null;
     return {
-      id: currentUser.value.uid,
-      email: currentUser.value.email!,
-      displayName: currentUser.value.displayName || undefined,
-      createdAt: currentUser.value.metadata.creationTime
-        ? new Date(currentUser.value.metadata.creationTime)
+      id: user.value.uid,
+      email: user.value.email!,
+      displayName: user.value.displayName || undefined,
+      createdAt: user.value.metadata.creationTime
+        ? new Date(user.value.metadata.creationTime)
         : new Date(),
     } as IUser;
   });
 
-  const isAuthenticated = computed(() => !!currentUser.value);
+  const isAuthenticated = computed(() => !!user.value);
 
   const login = async (email: string, password: string) => {
     try {
@@ -45,8 +37,11 @@ export const useAppAuth = () => {
         password
       );
       return { user: userCredential.user, error: null };
-    } catch (error: any) {
-      return { user: null, error: error.message };
+    } catch (error: unknown) {
+      return {
+        user: null,
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -58,8 +53,24 @@ export const useAppAuth = () => {
         password
       );
       return { user: userCredential.user, error: null };
-    } catch (error: any) {
-      return { user: null, error: error.message };
+    } catch (error: unknown) {
+      return {
+        user: null,
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      return { user: userCredential.user, error: null };
+    } catch (error: unknown) {
+      return {
+        user: null,
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -67,8 +78,10 @@ export const useAppAuth = () => {
     try {
       await sendPasswordResetEmail(auth, email);
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -77,16 +90,19 @@ export const useAppAuth = () => {
       await firebaseSignOut(auth);
       await router.push("/auth/login");
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
   return {
-    user,
+    user: appUser,
     isAuthenticated,
     login,
     signup,
+    signInWithGoogle,
     resetPassword,
     signOut,
   };

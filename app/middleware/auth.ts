@@ -1,7 +1,9 @@
-export default defineNuxtRouteMiddleware((to, from) => {
-  const { isAuthenticated } = useAppAuth();
+import { getCurrentUser } from "vuefire";
 
-  if (!isAuthenticated.value) {
+export default defineNuxtRouteMiddleware(async (to, from) => {
+  const user = await getCurrentUser(); // Waits for auth initialization
+
+  if (!user) {
     return navigateTo("/auth/login");
   }
 });

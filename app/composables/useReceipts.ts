@@ -85,9 +85,13 @@ export const useReceipts = () => {
         imageUrl,
         error: null,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading receipt:", error);
-      return { receiptId: "", imageUrl: "", error: error.message };
+      return {
+        receiptId: "",
+        imageUrl: "",
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -113,8 +117,10 @@ export const useReceipts = () => {
         updateData as any
       );
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
@@ -132,8 +138,10 @@ export const useReceipts = () => {
       await deleteDoc(doc(receiptsCollection.value, receiptId));
 
       return { error: null };
-    } catch (error: any) {
-      return { error: error.message };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
     }
   };
 
