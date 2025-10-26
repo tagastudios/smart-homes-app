@@ -2,24 +2,24 @@ import { getCurrentUser } from "vuefire";
 
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Temporarily disable middleware - let plugin handle auth
-  console.log("Auth middleware: Disabled - plugin handles auth");
+  // console.log("Auth middleware: Disabled - plugin handles auth");
   return;
 
   try {
-    console.log("Auth middleware: Checking authentication for", to.path);
+    // console.log("Auth middleware: Checking authentication for", to.path);
 
     // Wait longer for Firebase auth to initialize and plugin to run
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const user = await getCurrentUser(); // Waits for auth initialization
 
-    console.log(
-      "Auth middleware: User status",
-      user ? "authenticated" : "not authenticated"
-    );
+    // console.log(
+    //   "Auth middleware: User status",
+    //   user ? "authenticated" : "not authenticated"
+    // );
 
     if (!user) {
-      console.log("Auth middleware: Redirecting to login");
+      // console.log("Auth middleware: Redirecting to login");
       // Redirect to login with the original path as a query parameter
       return navigateTo({
         path: "/auth/login",
@@ -27,7 +27,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       });
     }
 
-    console.log("Auth middleware: User authenticated, allowing access");
+    // console.log("Auth middleware: User authenticated, allowing access");
   } catch (error) {
     console.error("Auth middleware error:", error);
     // If there's an error, redirect to login as well
