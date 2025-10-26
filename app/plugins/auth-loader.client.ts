@@ -5,6 +5,7 @@ export default defineNuxtPlugin(async () => {
   if (import.meta.server) return;
 
   const route = useRoute();
+  const router = useRouter();
   const isAuthRoute = route.path.startsWith("/auth/");
 
   console.log(
@@ -34,29 +35,36 @@ export default defineNuxtPlugin(async () => {
       user ? "authenticated" : "not authenticated"
     );
 
-    // If user is authenticated, hide loader
-    if (user) {
-      console.log("Auth loader plugin: User authenticated, hiding loader");
+    if (!user) {
+      console.log("Auth loader plugin: No user, redirecting to login");
+      // Hide loader before redirect
       const loader = document.getElementById("global-auth-loader");
       if (loader) {
         loader.style.display = "none";
       }
+      // Redirect to login
+      await router.push({
+        path: "/auth/login",
+        query: { redirect: route.fullPath },
+      });
+      return;
+    }
+
+    console.log("Auth loader plugin: User is authenticated, hiding loader");
+    // Hide loader after successful auth check
+    const loader = document.getElementById("global-auth-loader");
+    if (loader) {
+      console.log("Auth loader plugin: Hiding loader after auth check");
+      loader.style.display = "none";
     } else {
-      console.log(
-        "Auth loader plugin: No user, hiding loader (middleware will handle redirect)"
-      );
-      // If no user, redirect to login (this should be handled by middleware)
-      // But hide loader first to prevent stuck loading
-      const loader = document.getElementById("global-auth-loader");
-      if (loader) {
-        loader.style.display = "none";
-      }
+      console.log("Auth loader plugin: Loader element not found!");
     }
   } catch (error) {
     console.error("Auth loader plugin: Auth initialization error:", error);
     // Hide loader even on error to prevent stuck loading
     const loader = document.getElementById("global-auth-loader");
     if (loader) {
+      console.log("Auth loader plugin: Hiding loader after error");
       loader.style.display = "none";
     }
   }

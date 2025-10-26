@@ -1,11 +1,15 @@
 import { getCurrentUser } from "vuefire";
 
 export default defineNuxtRouteMiddleware(async (to, _from) => {
+  // Temporarily disable middleware - let plugin handle auth
+  console.log("Auth middleware: Disabled - plugin handles auth");
+  return;
+
   try {
     console.log("Auth middleware: Checking authentication for", to.path);
 
-    // Wait a bit longer for Firebase auth to initialize
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // Wait longer for Firebase auth to initialize and plugin to run
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const user = await getCurrentUser(); // Waits for auth initialization
 
