@@ -19,6 +19,7 @@ This is a Progressive Web App (PWA) for construction business expense and income
 - **Nuxt/VueUse** for any functionality that exists on their library
 - **Nuxt/UI** as the primary UI component library
 - **VueFire** for the main bridge between firebase and nuxt, please read docs at https://vuefire.vuejs.org/
+- **MCP Server** Please note you have access to nuxt-ui and firebase mcp server
 
 ### UI & Design System
 
@@ -37,7 +38,6 @@ This is a Progressive Web App (PWA) for construction business expense and income
 - **Firestore** for real-time financial data
 - **Firebase Storage** for receipt images (5-year auto-delete)
 - **Firebase Functions** for receipt OCR processing
-- **Firebase Hosting** for deployment
 
 ## Core Features
 
@@ -78,12 +78,13 @@ This is a Progressive Web App (PWA) for construction business expense and income
 
 ### Firebase Integration
 
-1. **Use Firebase composables** for authentication state
-2. **Implement proper error handling** for all Firebase operations
-3. **Use TypeScript interfaces** for Firestore document types
-4. **Implement offline-first** data patterns for financial data
-5. **Use Firebase Security Rules** for financial data protection
-6. **Implement auto-delete** for receipt images after 5 years
+1. **VueFire** for the main bridge between firebase and nuxt, please read docs at https://vuefire.vuejs.org/
+2. **Use Firebase composables** for authentication state
+3. **Implement proper error handling** for all Firebase operations
+4. **Use TypeScript interfaces** for Firestore document types
+5. **Implement offline-first** data patterns for financial data
+6. **Use Firebase Security Rules** for financial data protection
+7. **Implement auto-delete** for receipt images after 5 years
 
 ### PWA Requirements
 
