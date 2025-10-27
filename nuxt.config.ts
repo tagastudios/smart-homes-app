@@ -28,9 +28,6 @@ export default defineNuxtConfig({
     storage: {
       enabled: true,
     },
-    functions: {
-      enabled: true,
-    },
   },
   pwa: {
     /* PWA options */
