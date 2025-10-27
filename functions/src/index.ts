@@ -7,13 +7,6 @@ import { ImageAnnotatorClient } from "@google-cloud/vision";
 import OpenAI from "openai";
 import * as functions from "firebase-functions";
 
-// Initialize Firebase Admin with environment variables
-if (getApps().length === 0) {
-  initializeApp({
-    projectId: process.env.FIREBASE_PROJECT_ID || "smart-homes-app-26938",
-  });
-}
-
 const storage = getStorage();
 const db = getFirestore();
 const visionClient = new ImageAnnotatorClient();
@@ -328,6 +321,15 @@ export const processReceiptOnCreate = onDocumentCreated(
     console.log("Receipt data:", JSON.stringify(receiptData));
 
     try {
+      // Initialize Firebase Admin inside the function
+      console.log("Initializing Firebase Admin...");
+      initializeApp();
+      console.log("Firebase Admin initialized successfully");
+
+      const storage = getStorage();
+      const db = getFirestore();
+      const visionClient = new ImageAnnotatorClient();
+
       // Wait a moment for Storage upload to complete
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
