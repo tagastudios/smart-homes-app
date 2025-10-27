@@ -91,7 +91,9 @@ export const processReceipt = onObjectFinalized(
 
       // Step 2: Use OpenAI to parse and categorize items
       console.log("Processing with OpenAI...");
+      console.log("OpenAI configured:", !!openai);
       const ocrResult = await processWithOpenAI(fullText);
+      console.log("OpenAI result:", JSON.stringify(ocrResult).substring(0, 500));
 
       // Step 3: Update Firestore with results
       await updateReceiptStatus(receiptId, "processed", ocrResult);
@@ -198,8 +200,10 @@ Example:
 `;
 
   try {
+    console.log("Calling OpenAI API with model: gpt-4o");
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
@@ -214,6 +218,8 @@ Example:
       temperature: 0.1,
       max_tokens: 2000,
     });
+
+    console.log("OpenAI response received");
 
     const response = completion.choices[0]?.message?.content;
     if (!response) {
@@ -230,7 +236,8 @@ Example:
 
     return ocrResult;
   } catch (error) {
-    console.error("OpenAI processing error:", error);
+    console.error("OpenAI API error:", error);
+    console.error("Error details:", error instanceof Error ? error.message : "Unknown");
 
     // Fallback: return basic structure with raw text
     return {
@@ -283,6 +290,7 @@ export const processReceiptOnCreate = onDocumentCreated(
   {
     region: "us-east1",
     document: "receipts/{receiptId}",
+    secrets: ["OPENAI_API_KEY"],
   },
   async (event) => {
     const receiptId = event.params.receiptId;
@@ -334,7 +342,10 @@ export const processReceiptOnCreate = onDocumentCreated(
       console.log("OCR Detections:", fullText);
 
       // Process with OpenAI
+      console.log("Processing with OpenAI...");
+      console.log("OpenAI configured:", !!openai);
       const ocrResult = await processWithOpenAI(fullText);
+      console.log("OpenAI result:", JSON.stringify(ocrResult).substring(0, 500));
 
       // Update Firestore with results
       await updateReceiptStatus(receiptId, "processed", ocrResult);
