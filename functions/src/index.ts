@@ -1,24 +1,24 @@
 import { onObjectFinalized } from "firebase-functions/v2/storage";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
-import { initializeApp } from "firebase-admin/app";
+import { initializeApp, getApps } from "firebase-admin/app";
 import { getStorage } from "firebase-admin/storage";
 import { getFirestore } from "firebase-admin/firestore";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 import OpenAI from "openai";
+import * as functions from "firebase-functions";
 
-// Initialize Firebase Admin
-initializeApp();
+// Initialize Firebase Admin with environment variables
+if (getApps().length === 0) {
+  initializeApp({
+    projectId: process.env.FIREBASE_PROJECT_ID || "smart-homes-app-26938",
+  });
+}
 
 const storage = getStorage();
 const db = getFirestore();
 const visionClient = new ImageAnnotatorClient();
 
-// Initialize OpenAI
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    })
-  : null;
+// OpenAI will be initialized inside the function to access secrets
 
 interface ReceiptItem {
   name: string;
@@ -91,9 +91,12 @@ export const processReceipt = onObjectFinalized(
 
       // Step 2: Use OpenAI to parse and categorize items
       console.log("Processing with OpenAI...");
-      console.log("OpenAI configured:", !!openai);
+      console.log("OpenAI configured:", !!functions.config().openai?.api_key);
       const ocrResult = await processWithOpenAI(fullText);
-      console.log("OpenAI result:", JSON.stringify(ocrResult).substring(0, 500));
+      console.log(
+        "OpenAI result:",
+        JSON.stringify(ocrResult).substring(0, 500)
+      );
 
       // Step 3: Update Firestore with results
       await updateReceiptStatus(receiptId, "processed", ocrResult);
@@ -117,6 +120,17 @@ export const processReceipt = onObjectFinalized(
 );
 
 async function processWithOpenAI(text: string): Promise<OCRResult> {
+  // Initialize OpenAI inside the function to access Firebase config
+  const openaiApiKey = functions.config().openai?.api_key;
+  console.log("OpenAI API Key available:", !!openaiApiKey);
+  console.log("OpenAI API Key length:", openaiApiKey ? openaiApiKey.length : 0);
+
+  const openai = openaiApiKey
+    ? new OpenAI({
+        apiKey: openaiApiKey,
+      })
+    : null;
+
   if (!openai) {
     console.log("OpenAI not configured, returning basic OCR result");
     return {
@@ -237,7 +251,10 @@ Example:
     return ocrResult;
   } catch (error) {
     console.error("OpenAI API error:", error);
-    console.error("Error details:", error instanceof Error ? error.message : "Unknown");
+    console.error(
+      "Error details:",
+      error instanceof Error ? error.message : "Unknown"
+    );
 
     // Fallback: return basic structure with raw text
     return {
@@ -290,18 +307,25 @@ export const processReceiptOnCreate = onDocumentCreated(
   {
     region: "us-east1",
     document: "receipts/{receiptId}",
-    secrets: ["OPENAI_API_KEY"],
   },
   async (event) => {
+    console.log("=== FUNCTION STARTED ===");
+    console.log("Event params:", event.params);
+    console.log("Event data:", event.data?.data());
+
     const receiptId = event.params.receiptId;
     const receiptData = event.data?.data();
 
     if (!receiptData || receiptData.status !== "uploaded") {
-      console.log("Skipping receipt, not in uploaded status");
+      console.log(
+        "Skipping receipt, not in uploaded status. Status:",
+        receiptData?.status
+      );
       return;
     }
 
     console.log("Processing receipt document:", receiptId);
+    console.log("Receipt data:", JSON.stringify(receiptData));
 
     try {
       // Wait a moment for Storage upload to complete
@@ -343,21 +367,37 @@ export const processReceiptOnCreate = onDocumentCreated(
 
       // Process with OpenAI
       console.log("Processing with OpenAI...");
-      console.log("OpenAI configured:", !!openai);
+      console.log("OpenAI configured:", !!functions.config().openai?.api_key);
       const ocrResult = await processWithOpenAI(fullText);
-      console.log("OpenAI result:", JSON.stringify(ocrResult).substring(0, 500));
+      console.log(
+        "OpenAI result:",
+        JSON.stringify(ocrResult).substring(0, 500)
+      );
 
       // Update Firestore with results
       await updateReceiptStatus(receiptId, "processed", ocrResult);
 
       console.log("Receipt processing completed successfully");
     } catch (error) {
-      console.error("Error processing receipt:", error);
+      console.error("=== ERROR IN FUNCTION ===");
+      console.error("Error type:", typeof error);
+      console.error(
+        "Error message:",
+        error instanceof Error ? error.message : String(error)
+      );
+      console.error(
+        "Error stack:",
+        error instanceof Error ? error.stack : "No stack trace"
+      );
+      console.error("Full error object:", JSON.stringify(error, null, 2));
+
       await updateReceiptStatus(
         receiptId,
         "error",
         error instanceof Error ? error.message : "Unknown error"
       );
     }
+
+    console.log("=== FUNCTION COMPLETED ===");
   }
 );

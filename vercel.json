@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "functions/src/index.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "env": {
+    "FIREBASE_PROJECT_ID": "smart-homes-app-26938"
+  },
+  "buildCommand": "cd functions && npm run build"
+}
