@@ -29,7 +29,10 @@ export const useProjects = () => {
     );
   });
 
-  const { data: projects, pending } = useCollection<IProject>(projectsQuery);
+  const { data: projects, pending } = useCollection<IProject>(projectsQuery, {
+    wait: true,
+    once: false,
+  });
 
   const activeProjects = computed(() => {
     return projects.value?.filter((p) => p.status === "active") || [];

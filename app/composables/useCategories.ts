@@ -30,8 +30,13 @@ export const useCategories = () => {
     );
   });
 
-  const { data: customCategories, pending } =
-    useCollection<ICategory>(categoriesQuery);
+  const { data: customCategories, pending } = useCollection<ICategory>(
+    categoriesQuery,
+    {
+      wait: true,
+      once: false,
+    }
+  );
 
   const allCategories = computed(() => {
     const defaults = DEFAULT_CATEGORIES.map((cat, index) => ({

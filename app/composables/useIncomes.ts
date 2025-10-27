@@ -32,7 +32,10 @@ export const useIncomes = () => {
     );
   });
 
-  const { data: incomes, pending } = useCollection<IIncome>(incomesQuery);
+  const { data: incomes, pending } = useCollection<IIncome>(incomesQuery, {
+    wait: true,
+    once: false,
+  });
 
   const totalIncome = computed(() => {
     return incomes.value?.reduce((sum, inc) => sum + inc.amount, 0) || 0;

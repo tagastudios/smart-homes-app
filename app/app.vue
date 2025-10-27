@@ -7,7 +7,7 @@
         position: fixed;
         inset: 0;
         background-color: rgb(249 250 251);
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
         z-index: 9999;

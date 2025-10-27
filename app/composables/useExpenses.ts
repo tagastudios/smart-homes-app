@@ -34,7 +34,10 @@ export const useExpenses = () => {
     );
   });
 
-  const { data: expenses, pending } = useCollection<IExpense>(expensesQuery);
+  const { data: expenses, pending } = useCollection<IExpense>(expensesQuery, {
+    wait: true,
+    once: false,
+  });
 
   const expensesByProject = computed(() => {
     const grouped = new Map<string, IExpense[]>();

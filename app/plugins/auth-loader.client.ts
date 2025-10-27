@@ -25,8 +25,14 @@ export default defineNuxtPlugin(async () => {
     return;
   }
 
-  // For protected routes, wait for Firebase auth to initialize
+  // For protected routes, show loader and wait for Firebase auth to initialize
   try {
+    // Show loader for protected routes
+    const loader = document.getElementById("global-auth-loader");
+    if (loader) {
+      loader.style.display = "flex";
+    }
+
     // console.log("Auth loader plugin: Checking authentication...");
     const user = await getCurrentUser();
 
@@ -38,7 +44,6 @@ export default defineNuxtPlugin(async () => {
     if (!user) {
       // console.log("Auth loader plugin: No user, redirecting to login");
       // Hide loader before redirect
-      const loader = document.getElementById("global-auth-loader");
       if (loader) {
         loader.style.display = "none";
       }
@@ -52,7 +57,6 @@ export default defineNuxtPlugin(async () => {
 
     // console.log("Auth loader plugin: User is authenticated, hiding loader");
     // Hide loader after successful auth check
-    const loader = document.getElementById("global-auth-loader");
     if (loader) {
       // console.log("Auth loader plugin: Hiding loader after auth check");
       loader.style.display = "none";

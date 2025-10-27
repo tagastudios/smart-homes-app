@@ -2,9 +2,9 @@
   <div class="container mx-auto px-4 py-8 max-w-6xl">
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-          Projects
-        </h1>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Projects
+          </h1>
         <p class="text-gray-600 dark:text-gray-300 mt-1">
           Manage your construction projects and track budgets
         </p>
@@ -128,7 +128,7 @@
           </div>
         </div>
       </UCard>
-    </div>
+      </div>
 
     <!-- Add/Edit Modal -->
     <UModal v-model="showModal">
@@ -190,11 +190,11 @@
           <div class="flex gap-2 justify-end">
             <UButton color="gray" variant="ghost" @click="closeModal">
               Cancel
-            </UButton>
+          </UButton>
             <UButton type="submit" :loading="loading">
               {{ editingProject ? "Update" : "Create" }}
-            </UButton>
-          </div>
+          </UButton>
+        </div>
         </UForm>
       </UCard>
     </UModal>
@@ -224,7 +224,7 @@
             <UButton color="red" @click="handleDelete" :loading="loading">
               Delete
             </UButton>
-          </div>
+        </div>
         </template>
       </UCard>
     </UModal>

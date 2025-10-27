@@ -28,7 +28,10 @@ export const useAccounts = () => {
     );
   });
 
-  const { data: accounts, pending } = useCollection<IAccount>(accountsQuery);
+  const { data: accounts, pending } = useCollection<IAccount>(accountsQuery, {
+    wait: true,
+    once: false,
+  });
 
   const activeAccounts = computed(() => {
     return accounts.value?.filter((acc) => acc.isActive) || [];
