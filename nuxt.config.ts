@@ -20,8 +20,7 @@ export default defineNuxtConfig({
       messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
     },
     auth: {
-      enabled: true,
-      serverSide: false,
+      enabled: false,
     },
     firestore: {
       enabled: true,
