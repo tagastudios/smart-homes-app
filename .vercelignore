@@ -1,0 +1,6 @@
+functions/
+firebase.json
+firestore.rules
+firestore.indexes.json
+storage.rules
+service-account.json

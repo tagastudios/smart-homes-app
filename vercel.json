@@ -1,5 +1,6 @@
 {
   "env": {
     "FIREBASE_PROJECT_ID": "smart-homes-app-26938"
-  }
+  },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./functions/"
 }
