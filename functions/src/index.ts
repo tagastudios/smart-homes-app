@@ -228,8 +228,12 @@ IMPORTANT RULES:
 `;
 
   try {
+    console.log("API Key length:", apiKey.length);
+    console.log("API Key type:", typeof apiKey);
+    console.log("API Key preview:", apiKey.substring(0, 20) + "...");
+
     const openai = new OpenAI({
-      apiKey: apiKey,
+      apiKey: apiKey.trim(), // Trim any whitespace
     });
 
     const completion = await openai.chat.completions.create({
