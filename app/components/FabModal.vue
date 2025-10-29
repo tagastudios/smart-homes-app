@@ -10,6 +10,16 @@
   >
     <template #content>
       <div class="p-4">
+        <!-- Hidden file input for camera/gallery -->
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          class="hidden"
+          @change="handleFileSelect"
+        />
+
         <div class="space-y-3">
           <!-- Scan Receipt -->
           <UButton
@@ -87,7 +97,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useReceiptUpload } from "~/composables/useReceiptUpload";
 
 interface Props {
   open: boolean;
@@ -102,6 +114,11 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>();
+const router = useRouter();
+const { setFile } = useReceiptUpload();
+
+// File input ref
+const fileInput = ref<HTMLInputElement | null>(null);
 
 const isOpen = computed({
   get: () => props.open,
@@ -109,7 +126,31 @@ const isOpen = computed({
 });
 
 const handleAction = (action: string) => {
-  emit("action", action);
-  emit("close");
+  if (action === "scan-receipt") {
+    // Trigger file input for camera/gallery
+    fileInput.value?.click();
+  } else {
+    // Handle other actions normally
+    emit("action", action);
+    emit("close");
+  }
+};
+
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (file && file.type.startsWith("image/")) {
+    // Store file in shared state
+    setFile(file);
+
+    // Navigate to processing page
+    router.push("/receipts/processing");
+
+    // Close modal
+    emit("close");
+  } else {
+    console.error("Please select a valid image file");
+  }
 };
 </script>
