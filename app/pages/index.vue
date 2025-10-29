@@ -1,126 +1,167 @@
 <template>
   <ClientOnly>
-    <UContainer>
-      <div class="min-h-screen py-8">
-        <!-- Header with user info and sign out -->
-        <div class="flex justify-between items-center mb-8">
+    <div class="w-full bg-slate-950">
+      <!-- Header with gradient background -->
+      <div class="bg-gradient-purple-blue p-6 pt-12 rounded-b-3xl">
+        <div class="flex justify-between items-start mb-6">
           <div>
-            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              Smart Homes
-            </h1>
-            <p class="text-lg text-gray-600 dark:text-gray-300">
-              Construction Business Expense Tracker
-            </p>
+            <h1 class="text-2xl font-bold text-white mb-1">Welcome back!</h1>
+            <p class="text-purple-200">Track your expenses</p>
           </div>
 
-          <div class="flex items-center gap-4">
-            <div class="text-right">
-              <p class="text-sm text-gray-600 dark:text-gray-300">
-                Welcome back,
-              </p>
-              <p class="font-semibold text-gray-900 dark:text-white">
-                {{ user?.displayName || user?.email || "User" }}
+          <!-- Message button with glassmorphism -->
+          <UButton
+            variant="ghost"
+            icon="i-lucide-message-square"
+            class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl hover:bg-white/30 transition-all text-white"
+            size="lg"
+          />
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 gap-4">
+          <!-- This Month Card -->
+          <UCard class="glass rounded-2xl p-4">
+            <p class="text-purple-200 text-sm mb-1">This Month</p>
+            <p class="text-2xl font-bold text-white mb-1">
+              {{ formatCurrency(thisMonthExpenses) }}
+            </p>
+            <div class="flex items-center gap-1">
+              <UIcon
+                name="i-lucide-trending-up"
+                class="w-4 h-4 text-green-400"
+              />
+              <p class="text-sm text-green-400">
+                {{ formatPercentage(expensesPercentageChange) }}
               </p>
             </div>
+          </UCard>
 
-            <UDropdownMenu :items="userMenuItems">
-              <UButton variant="ghost" icon="i-heroicons-user-circle" />
-            </UDropdownMenu>
-          </div>
-        </div>
-
-        <!-- Navigation cards -->
-        <div
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto"
-        >
-          <NuxtLink to="/expenses" class="block">
-            <UCard class="hover:shadow-lg transition-shadow cursor-pointer">
-              <template #header>
-                <h3 class="text-xl font-semibold">Expenses</h3>
-              </template>
-              <p class="text-gray-600 dark:text-gray-300">
-                Track and manage your business expenses
+          <!-- Pending Card -->
+          <UCard class="glass rounded-2xl p-4">
+            <p class="text-purple-200 text-sm mb-1">Pending</p>
+            <p class="text-2xl font-bold text-white mb-1">
+              {{ formatCurrency(pendingReceipts.totalAmount) }}
+            </p>
+            <div class="flex items-center gap-1">
+              <p class="text-sm text-purple-200">
+                {{ pendingReceipts.count }} items
               </p>
-            </UCard>
-          </NuxtLink>
-
-          <NuxtLink to="/incomes" class="block">
-            <UCard class="hover:shadow-lg transition-shadow cursor-pointer">
-              <template #header>
-                <h3 class="text-xl font-semibold">Income</h3>
-              </template>
-              <p class="text-gray-600 dark:text-gray-300">
-                Record and monitor your income sources
-              </p>
-            </UCard>
-          </NuxtLink>
-
-          <NuxtLink to="/projects" class="block">
-            <UCard class="hover:shadow-lg transition-shadow cursor-pointer">
-              <template #header>
-                <h3 class="text-xl font-semibold">Projects</h3>
-              </template>
-              <p class="text-gray-600 dark:text-gray-300">
-                Manage your construction projects and budgets
-              </p>
-            </UCard>
-          </NuxtLink>
-
-          <NuxtLink to="/receipts" class="block">
-            <UCard class="hover:shadow-lg transition-shadow cursor-pointer">
-              <template #header>
-                <h3 class="text-xl font-semibold">Receipts</h3>
-              </template>
-              <p class="text-gray-600 dark:text-gray-300">
-                Process and organize receipt photos
-              </p>
-            </UCard>
-          </NuxtLink>
-
-          <NuxtLink to="/accounts" class="block">
-            <UCard class="hover:shadow-lg transition-shadow cursor-pointer">
-              <template #header>
-                <h3 class="text-xl font-semibold">Accounts</h3>
-              </template>
-              <p class="text-gray-600 dark:text-gray-300">
-                Manage your financial accounts
-              </p>
-            </UCard>
-          </NuxtLink>
-
-          <NuxtLink to="/reports" class="block">
-            <UCard class="hover:shadow-lg transition-shadow cursor-pointer">
-              <template #header>
-                <h3 class="text-xl font-semibold">Reports</h3>
-              </template>
-              <p class="text-gray-600 dark:text-gray-300">
-                View financial reports and analytics
-              </p>
-            </UCard>
-          </NuxtLink>
+            </div>
+          </UCard>
         </div>
       </div>
-    </UContainer>
+
+      <!-- Quick Actions with overlapping effect -->
+      <div class="px-6 -mt-6 mb-6">
+        <UCard
+          class="bg-slate-900 rounded-2xl p-4 border border-slate-800 shadow-xl"
+        >
+          <p class="text-slate-400 text-sm mb-3">Quick Actions</p>
+          <div class="grid grid-cols-3 gap-3">
+            <UButton
+              to="/reports"
+              variant="ghost"
+              class="flex flex-col items-center gap-2 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all touch-target"
+            >
+              <UIcon
+                name="i-lucide-chart-column"
+                class="w-6 h-6 text-purple-400"
+              />
+              <span class="text-xs text-slate-300">Reports</span>
+            </UButton>
+
+            <UButton
+              to="/projects"
+              variant="ghost"
+              class="flex flex-col items-center gap-2 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all touch-target"
+            >
+              <UIcon
+                name="i-lucide-folder-open"
+                class="w-6 h-6 text-blue-400"
+              />
+              <span class="text-xs text-slate-300">Projects</span>
+            </UButton>
+
+            <UButton
+              to="/accounts"
+              variant="ghost"
+              class="flex flex-col items-center gap-2 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all touch-target"
+            >
+              <UIcon
+                name="i-lucide-credit-card"
+                class="w-6 h-6 text-green-400"
+              />
+              <span class="text-xs text-slate-300">Accounts</span>
+            </UButton>
+          </div>
+        </UCard>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="px-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-white">Recent</h2>
+          <UButton variant="link" class="text-purple-400 text-sm">
+            View all
+          </UButton>
+        </div>
+
+        <div class="space-y-3">
+          <UCard
+            v-for="transaction in recentTransactions"
+            :key="transaction.id"
+            class="bg-slate-900 rounded-2xl p-4 border border-slate-800"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  :class="`w-10 h-10 rounded-xl flex items-center justify-center ${transaction.bgColor}`"
+                >
+                  <UIcon
+                    :name="transaction.icon"
+                    :class="`w-5 h-5 ${transaction.iconColor}`"
+                  />
+                </div>
+                <div>
+                  <p class="text-white font-medium">
+                    {{ transaction.description }}
+                  </p>
+                  <p class="text-slate-400 text-sm">
+                    {{ transaction.location }}
+                  </p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p :class="`font-semibold ${transaction.amountColor}`">
+                  {{ formatAmount(transaction.amount, transaction.type) }}
+                </p>
+                <p class="text-slate-400 text-sm">{{ transaction.date }}</p>
+              </div>
+            </div>
+          </UCard>
+        </div>
+      </div>
+    </div>
   </ClientOnly>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// Define page meta following Nuxt best practices
 definePageMeta({
   middleware: "auth",
   ssr: false,
+  layout: "default",
 });
 
-const { user, signOut } = useAppAuth();
-
-const userMenuItems = [
-  [
-    {
-      label: "Sign Out",
-      icon: "i-heroicons-arrow-right-on-rectangle",
-      onSelect: async () => {
-        await signOut();
-      },
-    },
-  ],
-];
+// Use dashboard stats composable
+const {
+  thisMonthExpenses,
+  pendingReceipts,
+  expensesPercentageChange,
+  recentTransactions,
+  formatCurrency,
+  formatPercentage,
+  formatAmount,
+} = useDashboardStats();
 </script>

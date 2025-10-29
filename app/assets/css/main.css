@@ -6,3 +6,64 @@ body {
   height: 100dvh;
   width: 100dvw;
 }
+
+/* Mobile-first responsive design */
+@media (max-width: 375px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Glassmorphism utilities */
+.glass {
+  @apply bg-white/10 backdrop-blur-lg border border-white/20;
+}
+
+.glass-dark {
+  @apply bg-slate-900/80 backdrop-blur-lg border-t border-slate-800;
+}
+
+/* Custom gradient utilities */
+.bg-gradient-purple-blue {
+  background: linear-gradient(to bottom right, rgb(88 28 135), rgb(30 58 138));
+}
+
+.bg-gradient-purple-indigo {
+  background: linear-gradient(to bottom right, rgb(88 28 135), rgb(55 48 163));
+}
+
+.bg-gradient-fab {
+  background: linear-gradient(to right, rgb(147 51 234), rgb(37 99 235));
+}
+
+/* Mobile-specific utilities */
+.mobile-nav-height {
+  height: 5rem; /* 80px */
+}
+
+.mobile-padding-bottom {
+  padding-bottom: 6rem; /* 96px - pb-24 */
+}
+
+/* Touch-friendly tap targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Custom hover states for mobile */
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Ensure proper z-index layering */
+.nav-z-index {
+  z-index: 50;
+}
+
+.modal-z-index {
+  z-index: 60;
+}
