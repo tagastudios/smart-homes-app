@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     "@nuxt/eslint",
     "@vite-pwa/nuxt",
     "nuxt-vuefire",
+    "@formkit/auto-animate/nuxt",
   ],
   css: ["~/assets/css/main.css"],
   vuefire: {

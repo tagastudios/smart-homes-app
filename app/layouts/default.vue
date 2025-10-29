@@ -56,15 +56,12 @@
               class="w-16 h-16 bg-gradient-fab rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-4 border-slate-900 touch-target"
               @click="toggleFabMenu"
             >
-              <UIcon name="i-lucide-plus" class="w-8 h-8 text-white" />
+              <UIcon
+                name="i-lucide-plus"
+                class="w-8 h-8 text-white transition-transform duration-300"
+                :class="{ 'rotate-45': showFabModal }"
+              />
             </UButton>
-
-            <!-- FAB Menu -->
-            <UDropdownMenu
-              v-model:open="showFabMenu"
-              :items="fabMenuItems"
-              :content="{ side: 'top', align: 'center' }"
-            />
           </div>
 
           <!-- Projects -->
@@ -99,6 +96,13 @@
         </div>
       </UCard>
     </div>
+
+    <!-- FAB Modal -->
+    <FabModal
+      v-model:open="showFabModal"
+      @close="showFabModal = false"
+      @action="handleFabAction"
+    />
   </div>
 </template>
 
@@ -106,45 +110,31 @@
 const route = useRoute();
 const router = useRouter();
 
-const showFabMenu = ref(false);
+const showFabModal = ref(false);
 
 // Check if route is active
 const isActive = (path: string) => {
   return route.path === path;
 };
 
-// FAB Menu Items
-const fabMenuItems = [
-  [
-    {
-      label: "Scan Receipt",
-      icon: "i-lucide-camera",
-      onSelect: () => {
-        showFabMenu.value = false;
-        router.push("/receipts");
-      },
-    },
-    {
-      label: "Add Expense",
-      icon: "i-lucide-minus",
-      onSelect: () => {
-        showFabMenu.value = false;
-        router.push("/expenses");
-      },
-    },
-    {
-      label: "Add Income",
-      icon: "i-lucide-plus",
-      onSelect: () => {
-        showFabMenu.value = false;
-        router.push("/incomes");
-      },
-    },
-  ],
-];
-
 // Toggle FAB menu
 const toggleFabMenu = () => {
-  showFabMenu.value = !showFabMenu.value;
+  showFabModal.value = !showFabModal.value;
+};
+
+// Handle FAB modal actions
+const handleFabAction = (action: string) => {
+  showFabModal.value = false; // Ensure modal closes
+  switch (action) {
+    case "scan-receipt":
+      router.push("/receipts");
+      break;
+    case "add-expense":
+      router.push("/expenses");
+      break;
+    case "add-income":
+      router.push("/incomes");
+      break;
+  }
 };
 </script>
