@@ -21,6 +21,7 @@ export interface IAccount {
   id: string;
   name: string;
   type: "credit" | "debit" | "bank" | "loan";
+  cardType?: "visa" | "mastercard" | "amex" | "discover" | "other";
   lastFourDigits?: string;
   isActive: boolean;
   userId: string;
@@ -163,6 +164,7 @@ export interface IProjectForm {
 export interface IAccountForm {
   name: string;
   type: "credit" | "debit" | "bank" | "loan";
+  cardType?: "visa" | "mastercard" | "amex" | "discover" | "other";
   lastFourDigits?: string;
   isActive: boolean;
 }
