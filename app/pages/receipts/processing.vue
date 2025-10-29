@@ -51,6 +51,10 @@
                   size="lg"
                   color="primary"
                   class="mb-2"
+                  :ui="{
+                    indicator:
+                      'bg-gradient-to-r from-purple-600 to-blue-600 rounded-full size-full transition-transform duration-200 ease-out',
+                  }"
                 />
                 <p class="text-sm text-slate-400 text-center">
                   {{ Math.round(uploadProgress) }}% complete
@@ -62,7 +66,7 @@
             <div v-else-if="isShowingSuccess" class="text-center">
               <UIcon
                 name="i-lucide-check-circle"
-                class="w-12 h-12 text-green-400 mx-auto mb-2"
+                class="w-12 h-12 text-green-400 mx-auto mb-3"
               />
               <h3 class="text-xl font-bold text-white mb-2">
                 Processing Complete

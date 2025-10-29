@@ -1,61 +1,52 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-4">
-              <UButton
-                to="/receipts"
-                variant="ghost"
-                icon="i-heroicons-arrow-left"
-              >
-                Back to Receipts
-              </UButton>
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                Receipt Review
-              </h1>
-            </div>
-            <UBadge
-              v-if="receipt"
-              :color="getStatusColor(receipt.status)"
-              variant="solid"
-              size="lg"
-            >
-              {{ receipt.status }}
-            </UBadge>
-          </div>
-          <p class="text-gray-600 dark:text-gray-300">
-            Review and approve receipt items for expense creation
-          </p>
+    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+      <!-- Gradient Header -->
+      <div
+        class="bg-gradient-to-r from-purple-700 to-blue-700 px-6 py-6 rounded-b-3xl shadow-lg"
+      >
+        <div class="flex items-center justify-between">
+          <UButton
+            to="/receipts"
+            variant="ghost"
+            icon="i-lucide-arrow-left"
+            iconClass="size-7 text-white stroke-[3]"
+            class="bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl px-3 py-3 shadow-md border border-white/30 text-white"
+          />
+          <h1 class="text-2xl font-bold text-white">Review Receipt</h1>
+          <div class="w-10"></div>
+          <!-- Spacer for centering -->
         </div>
+      </div>
 
+      <div class="container mx-auto px-6 py-6">
         <!-- Loading State -->
         <div v-if="isLoading" class="text-center py-12">
           <UIcon
-            name="i-heroicons-arrow-path"
-            class="animate-spin mx-auto h-12 w-12 text-gray-400 mb-4"
+            name="i-lucide-loader-2"
+            class="animate-spin mx-auto h-12 w-12 text-purple-400 mb-4"
           />
-          <p class="text-gray-500">Loading receipt...</p>
+          <p class="text-slate-400">Loading receipt...</p>
         </div>
 
         <!-- Error State -->
-        <UCard v-else-if="error" class="mb-6">
+        <UCard v-else-if="error" class="mb-6 bg-slate-900 border-slate-800">
           <div class="text-center py-8">
             <UIcon
-              name="i-heroicons-exclamation-triangle"
+              name="i-lucide-alert-triangle"
               class="mx-auto h-12 w-12 text-red-400 mb-4"
             />
-            <h3
-              class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-            >
+            <h3 class="text-lg font-semibold text-white mb-2">
               Error Loading Receipt
             </h3>
-            <p class="text-gray-500 dark:text-gray-400 mb-4">
+            <p class="text-slate-400 mb-4">
               {{ error }}
             </p>
-            <UButton to="/receipts" variant="outline">
+            <UButton
+              to="/receipts"
+              variant="outline"
+              class="border-slate-600 text-slate-300"
+            >
               Back to Receipts
             </UButton>
           </div>
@@ -64,18 +55,19 @@
         <!-- Receipt Content -->
         <div v-else-if="receipt">
           <!-- Processing Status -->
-          <UCard v-if="receipt.status === 'processing'" class="mb-6">
+          <UCard
+            v-if="receipt.status === 'processing'"
+            class="mb-6 bg-slate-900 border-slate-800"
+          >
             <div class="text-center py-8">
               <UIcon
-                name="i-heroicons-arrow-path"
-                class="animate-spin mx-auto h-12 w-12 text-blue-400 mb-4"
+                name="i-lucide-loader-2"
+                class="animate-spin mx-auto h-12 w-12 text-purple-400 mb-4"
               />
-              <h3
-                class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-              >
+              <h3 class="text-lg font-semibold text-white mb-2">
                 Processing Receipt
               </h3>
-              <p class="text-gray-500 dark:text-gray-400">
+              <p class="text-slate-400">
                 We're analyzing your receipt with AI. This may take a few
                 moments...
               </p>
@@ -83,23 +75,28 @@
           </UCard>
 
           <!-- Error Status -->
-          <UCard v-else-if="receipt.status === 'error'" class="mb-6">
+          <UCard
+            v-else-if="receipt.status === 'error'"
+            class="mb-6 bg-slate-900 border-slate-800"
+          >
             <div class="text-center py-8">
               <UIcon
-                name="i-heroicons-exclamation-triangle"
+                name="i-lucide-alert-triangle"
                 class="mx-auto h-12 w-12 text-red-400 mb-4"
               />
-              <h3
-                class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-              >
+              <h3 class="text-lg font-semibold text-white mb-2">
                 Processing Failed
               </h3>
-              <p class="text-gray-500 dark:text-gray-400 mb-4">
+              <p class="text-slate-400 mb-4">
                 We couldn't process this receipt.
                 {{ receipt.errorMessage || "Please try uploading again." }}
               </p>
               <div class="flex justify-center gap-3">
-                <UButton to="/receipts" variant="outline">
+                <UButton
+                  to="/receipts"
+                  variant="outline"
+                  class="border-slate-600 text-slate-300"
+                >
                   Back to Receipts
                 </UButton>
                 <UButton color="red" @click="deleteReceipt">
@@ -110,25 +107,35 @@
           </UCard>
 
           <!-- Approved Status -->
-          <UCard v-else-if="receipt.status === 'approved'" class="mb-6">
+          <UCard
+            v-else-if="receipt.status === 'approved'"
+            class="mb-6 bg-slate-900 border-slate-800"
+          >
             <div class="text-center py-8">
               <UIcon
-                name="i-heroicons-check-circle"
+                name="i-lucide-check-circle"
                 class="mx-auto h-12 w-12 text-green-400 mb-4"
               />
-              <h3
-                class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
-              >
+              <h3 class="text-lg font-semibold text-white mb-2">
                 Receipt Approved
               </h3>
-              <p class="text-gray-500 dark:text-gray-400 mb-4">
+              <p class="text-slate-400 mb-4">
                 This receipt has been processed and expenses have been created.
               </p>
               <div class="flex justify-center gap-3">
-                <UButton to="/receipts" variant="outline">
+                <UButton
+                  to="/receipts"
+                  variant="outline"
+                  class="border-slate-600 text-slate-300"
+                >
                   Back to Receipts
                 </UButton>
-                <UButton to="/expenses"> View Expenses </UButton>
+                <UButton
+                  to="/expenses"
+                  class="bg-gradient-to-r from-purple-600 to-blue-600"
+                >
+                  View Expenses
+                </UButton>
               </div>
             </div>
           </UCard>
@@ -142,45 +149,62 @@
           />
 
           <!-- Raw Text Display (for uploaded status) -->
-          <UCard v-else-if="receipt.status === 'uploaded'">
+          <UCard
+            v-else-if="receipt.status === 'uploaded'"
+            class="bg-slate-900 border-slate-800"
+          >
             <template #header>
-              <h3 class="text-lg font-semibold">Receipt Uploaded</h3>
+              <h3 class="text-lg font-semibold text-white">Receipt Uploaded</h3>
             </template>
             <div class="text-center py-8">
               <UIcon
-                name="i-heroicons-clock"
+                name="i-lucide-clock"
                 class="mx-auto h-12 w-12 text-yellow-400 mb-4"
               />
-              <p class="text-gray-500 dark:text-gray-400 mb-4">
+              <p class="text-slate-400 mb-4">
                 This receipt is waiting to be processed. Processing usually
                 takes 1-2 minutes.
               </p>
-              <UButton @click="refreshReceipt" variant="outline">
-                <UIcon name="i-heroicons-arrow-path" class="mr-2" />
+              <UButton
+                @click="refreshReceipt"
+                variant="outline"
+                class="border-slate-600 text-slate-300"
+              >
+                <UIcon name="i-lucide-refresh-cw" class="mr-2" />
                 Refresh Status
               </UButton>
             </div>
           </UCard>
 
           <!-- Fallback for unknown status -->
-          <UCard v-else>
+          <UCard v-else class="bg-slate-900 border-slate-800">
             <template #header>
-              <h3 class="text-lg font-semibold">Unknown Receipt Status</h3>
+              <h3 class="text-lg font-semibold text-white">
+                Unknown Receipt Status
+              </h3>
             </template>
             <div class="text-center py-8">
               <UIcon
-                name="i-heroicons-question-mark-circle"
-                class="mx-auto h-12 w-12 text-gray-400 mb-4"
+                name="i-lucide-help-circle"
+                class="mx-auto h-12 w-12 text-slate-400 mb-4"
               />
-              <p class="text-gray-500 dark:text-gray-400 mb-4">
+              <p class="text-slate-400 mb-4">
                 This receipt has an unexpected status: {{ receipt.status }}
               </p>
               <div class="flex justify-center gap-3">
-                <UButton @click="refreshReceipt" variant="outline">
-                  <UIcon name="i-heroicons-arrow-path" class="mr-2" />
+                <UButton
+                  @click="refreshReceipt"
+                  variant="outline"
+                  class="border-slate-600 text-slate-300"
+                >
+                  <UIcon name="i-lucide-refresh-cw" class="mr-2" />
                   Refresh Status
                 </UButton>
-                <UButton to="/receipts" variant="outline">
+                <UButton
+                  to="/receipts"
+                  variant="outline"
+                  class="border-slate-600 text-slate-300"
+                >
                   Back to Receipts
                 </UButton>
               </div>
@@ -189,24 +213,32 @@
         </div>
 
         <!-- Fallback for no receipt data -->
-        <UCard v-else>
+        <UCard v-else class="bg-slate-900 border-slate-800">
           <template #header>
-            <h2 class="text-xl font-semibold">No Receipt Data</h2>
+            <h2 class="text-xl font-semibold text-white">No Receipt Data</h2>
           </template>
           <div class="text-center py-8">
             <UIcon
-              name="i-heroicons-document"
-              class="mx-auto h-12 w-12 text-gray-400 mb-4"
+              name="i-lucide-file-text"
+              class="mx-auto h-12 w-12 text-slate-400 mb-4"
             />
-            <p class="text-gray-500 dark:text-gray-400 mb-4">
+            <p class="text-slate-400 mb-4">
               Unable to load receipt data. This might be a temporary issue.
             </p>
             <div class="flex justify-center gap-3">
-              <UButton @click="refreshReceipt" variant="outline">
-                <UIcon name="i-heroicons-arrow-path" class="mr-2" />
+              <UButton
+                @click="refreshReceipt"
+                variant="outline"
+                class="border-slate-600 text-slate-300"
+              >
+                <UIcon name="i-lucide-refresh-cw" class="mr-2" />
                 Try Again
               </UButton>
-              <UButton to="/receipts" variant="outline">
+              <UButton
+                to="/receipts"
+                variant="outline"
+                class="border-slate-600 text-slate-300"
+              >
                 Back to Receipts
               </UButton>
             </div>
@@ -331,14 +363,26 @@ const handleApproved = async (data) => {
 
     await Promise.all(expensePromises);
 
-    // Show success message
-    // You can add a toast notification here
+    // Show success toast
+    const toast = useToast();
+    toast.add({
+      title: "Receipt added successfully!",
+      color: "success",
+      icon: "i-lucide-check-circle",
+    });
 
-    // Navigate back to receipts
-    router.push("/receipts");
+    // Navigate to dashboard
+    router.push("/");
   } catch (err) {
     console.error("Error creating expenses:", err);
     // Show error toast
+    const toast = useToast();
+    toast.add({
+      title: "Error creating expenses",
+      description: err.message,
+      color: "error",
+      icon: "i-lucide-alert-triangle",
+    });
   }
 };
 
