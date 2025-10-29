@@ -67,3 +67,17 @@ body {
 .modal-z-index {
   z-index: 60;
 }
+
+/* FAB overflow fix */
+.fab-overflow {
+  overflow: visible !important;
+}
+
+/* Ensure bottom navigation allows FAB overflow */
+.bottom-nav-container {
+  overflow: visible !important;
+}
+
+.bottom-nav-container * {
+  overflow: visible !important;
+}

@@ -6,13 +6,18 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <div class="fixed bottom-0 left-0 right-0 z-50">
+    <div
+      class="fixed bottom-0 left-0 right-0 z-50 overflow-visible bottom-nav-container"
+    >
       <UCard
-        class="glass-dark rounded-none"
-        :ui="{ root: 'rounded-none', body: 'p-0' }"
+        class="glass-dark rounded-none overflow-visible"
+        :ui="{
+          root: 'rounded-none overflow-visible',
+          body: 'p-0 overflow-visible',
+        }"
       >
         <div
-          class="relative flex justify-around items-center max-w-md mx-auto px-6 py-3"
+          class="relative flex justify-around items-center max-w-md mx-auto px-6 py-3 overflow-visible"
         >
           <!-- Home -->
           <UButton
@@ -45,7 +50,7 @@
           </UButton>
 
           <!-- Floating Action Button -->
-          <div class="relative -top-6">
+          <div class="relative -top-6 overflow-visible fab-overflow">
             <UButton
               size="lg"
               class="w-16 h-16 bg-gradient-fab rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-4 border-slate-900 touch-target"
@@ -94,18 +99,6 @@
         </div>
       </UCard>
     </div>
-
-    <!-- Add Expense Modal -->
-    <AddExpenseModal
-      v-model="showExpenseModal"
-      @close="showExpenseModal = false"
-    />
-
-    <!-- Add Income Modal -->
-    <AddIncomeModal
-      v-model="showIncomeModal"
-      @close="showIncomeModal = false"
-    />
   </div>
 </template>
 
@@ -113,8 +106,6 @@
 const route = useRoute();
 const router = useRouter();
 
-const showExpenseModal = ref(false);
-const showIncomeModal = ref(false);
 const showFabMenu = ref(false);
 
 // Check if route is active
@@ -138,7 +129,7 @@ const fabMenuItems = [
       icon: "i-lucide-minus",
       onSelect: () => {
         showFabMenu.value = false;
-        showExpenseModal.value = true;
+        router.push("/expenses");
       },
     },
     {
@@ -146,7 +137,7 @@ const fabMenuItems = [
       icon: "i-lucide-plus",
       onSelect: () => {
         showFabMenu.value = false;
-        showIncomeModal.value = true;
+        router.push("/incomes");
       },
     },
   ],

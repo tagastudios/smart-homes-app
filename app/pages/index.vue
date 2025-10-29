@@ -13,7 +13,7 @@
           <UButton
             variant="ghost"
             icon="i-lucide-message-square"
-            class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl hover:bg-white/30 transition-all text-white"
+            class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl hover:bg-white/30 transition-all text-white flex items-center justify-center"
             size="lg"
           />
         </div>
@@ -21,7 +21,7 @@
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 gap-4">
           <!-- This Month Card -->
-          <UCard class="glass rounded-2xl p-4">
+          <UCard class="glass rounded-2xl p-3">
             <p class="text-purple-200 text-sm mb-1">This Month</p>
             <p class="text-2xl font-bold text-white mb-1">
               {{ formatCurrency(thisMonthExpenses) }}
@@ -38,7 +38,7 @@
           </UCard>
 
           <!-- Pending Card -->
-          <UCard class="glass rounded-2xl p-4">
+          <UCard class="glass rounded-2xl p-3">
             <p class="text-purple-200 text-sm mb-1">Pending</p>
             <p class="text-2xl font-bold text-white mb-1">
               {{ formatCurrency(pendingReceipts.totalAmount) }}
@@ -53,9 +53,9 @@
       </div>
 
       <!-- Quick Actions with overlapping effect -->
-      <div class="px-6 -mt-6 mb-6">
+      <div class="px-6 -mt-4 mb-6">
         <UCard
-          class="bg-slate-900 rounded-2xl p-4 border border-slate-800 shadow-xl"
+          class="bg-slate-900 rounded-2xl p-3 border border-slate-800 shadow-xl"
         >
           <p class="text-slate-400 text-sm mb-3">Quick Actions</p>
           <div class="grid grid-cols-3 gap-3">
@@ -111,7 +111,7 @@
           <UCard
             v-for="transaction in recentTransactions"
             :key="transaction.id"
-            class="bg-slate-900 rounded-2xl p-4 border border-slate-800"
+            class="bg-slate-900 rounded-2xl p-3 border border-slate-800"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
