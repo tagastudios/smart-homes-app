@@ -49,6 +49,8 @@ export interface IReceipt {
   processedDate?: Date | Timestamp;
   status: "uploaded" | "processing" | "processed" | "error";
   userId: string;
+  errorMessage?: string;
+  receiptNumber?: number;
 }
 
 export interface IOcrItem {

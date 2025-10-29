@@ -54,12 +54,8 @@
         </UCard>
 
         <!-- Image Preview Modal -->
-        <UModal v-model="showPreview" :ui="{ width: 'max-w-2xl' }">
-          <UCard>
-            <template #header>
-              <h3 class="text-lg font-semibold">Review Receipt</h3>
-            </template>
-
+        <UModal v-model:open="showPreview" title="Review Receipt">
+          <template #body>
             <div class="space-y-4">
               <div class="text-center">
                 <img
@@ -68,35 +64,34 @@
                   class="max-h-96 mx-auto rounded-lg shadow-lg"
                 />
               </div>
-
-              <div class="flex justify-end gap-3">
-                <UButton variant="outline" @click="cancelUpload">
-                  Cancel
-                </UButton>
-                <UButton :loading="isUploading" @click="uploadReceipt">
-                  Upload Receipt
-                </UButton>
-              </div>
             </div>
-          </UCard>
+          </template>
+
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton variant="outline" @click="cancelUpload">
+                Cancel
+              </UButton>
+              <UButton :loading="isUploading" @click="uploadReceipt">
+                Upload Receipt
+              </UButton>
+            </div>
+          </template>
         </UModal>
 
         <!-- Camera Modal -->
-        <UModal v-model="showCamera" :ui="{ width: 'max-w-4xl' }">
-          <UCard>
-            <template #header>
-              <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold">Camera Capture</h3>
-                <UButton
-                  variant="ghost"
-                  icon="i-heroicons-x-mark"
-                  @click="stopCamera"
-                />
-              </div>
-            </template>
-
+        <UModal
+          v-model:open="showCamera"
+          title="Camera Capture"
+          :ui="{ content: 'w-[calc(100vw-2rem)] max-w-4xl' }"
+        >
+          <template #body>
             <div class="space-y-4">
-              <div class="relative bg-black rounded-lg overflow-hidden">
+              <!-- Camera View -->
+              <div
+                v-if="!showCameraPreview"
+                class="relative bg-black rounded-lg overflow-hidden"
+              >
                 <video
                   ref="videoElement"
                   autoplay
@@ -118,17 +113,33 @@
                 </div>
               </div>
 
-              <div class="flex justify-center gap-3">
-                <UButton variant="outline" @click="stopCamera">
-                  Cancel
-                </UButton>
-                <UButton :loading="isCapturing" @click="capturePhoto">
-                  <UIcon name="i-heroicons-camera" class="mr-2" />
-                  Capture
-                </UButton>
+              <!-- Preview View -->
+              <div v-else class="text-center">
+                <img
+                  :src="previewImageUrl"
+                  alt="Captured receipt"
+                  class="max-h-96 mx-auto rounded-lg shadow-lg"
+                />
               </div>
             </div>
-          </UCard>
+          </template>
+
+          <template #footer>
+            <div class="flex justify-center gap-3">
+              <UButton variant="outline" @click="stopCamera"> Cancel </UButton>
+              <UButton
+                v-if="!showCameraPreview"
+                :loading="isCapturing"
+                @click="capturePhoto"
+              >
+                <UIcon name="i-heroicons-camera" class="mr-2" />
+                Capture
+              </UButton>
+              <UButton v-else :loading="isUploading" @click="uploadReceipt">
+                Upload Receipt
+              </UButton>
+            </div>
+          </template>
         </UModal>
 
         <!-- Receipts List -->
@@ -174,17 +185,36 @@
               class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div class="flex items-center space-x-4">
-                <div
-                  class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center"
-                >
-                  <UIcon
-                    name="i-heroicons-document-text"
-                    class="text-gray-500 text-xl"
+                <div class="w-16 h-16 rounded-lg overflow-hidden">
+                  <img
+                    v-if="receipt.imageUrl"
+                    :src="receipt.imageUrl"
+                    :alt="`Receipt ${
+                      receipt.receiptNumber || receipt.id.slice(-8)
+                    }`"
+                    class="w-full h-full object-cover"
+                    @error="handleImageError"
                   />
+                  <div
+                    v-else
+                    class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-document-text"
+                      class="text-gray-500 text-xl"
+                    />
+                  </div>
                 </div>
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">
-                    Receipt {{ receipt.id.slice(-8) }}
+                    {{
+                      receipt.receiptNumber
+                        ? `Receipt #${String(receipt.receiptNumber).padStart(
+                            3,
+                            "0"
+                          )}`
+                        : `Receipt ${receipt.id.slice(-8)}`
+                    }}
                   </p>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
                     {{ formatDate(receipt.uploadDate) }}
@@ -216,7 +246,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onUnmounted, nextTick } from "vue";
 import { useReceipts } from "~/composables/useReceipts";
 
 definePageMeta({
@@ -224,12 +254,12 @@ definePageMeta({
   ssr: false,
 });
 
-const { receipts, isLoading, uploadReceiptImage, getReceiptsByStatus } =
-  useReceipts();
+const { receipts, isLoading, uploadReceiptImage } = useReceipts();
 
 // Reactive state
 const showPreview = ref(false);
 const showCamera = ref(false);
+const showCameraPreview = ref(false);
 const isCapturing = ref(false);
 const isUploading = ref(false);
 const previewImageUrl = ref("");
@@ -291,6 +321,7 @@ const stopCamera = () => {
     stream.value = null;
   }
   showCamera.value = false;
+  showCameraPreview.value = false;
 };
 
 const capturePhoto = () => {
@@ -310,8 +341,7 @@ const capturePhoto = () => {
         const file = new File([blob], "receipt.jpg", { type: "image/jpeg" });
         selectedFile.value = file;
         previewImageUrl.value = URL.createObjectURL(blob);
-        showPreview.value = true;
-        stopCamera();
+        showCameraPreview.value = true;
       }
     },
     "image/jpeg",
@@ -356,6 +386,8 @@ const uploadReceipt = async () => {
 
     // Reset state
     cancelUpload();
+    showCamera.value = false;
+    showCameraPreview.value = false;
 
     // Show success message
     // You can add a toast notification here
@@ -379,6 +411,11 @@ const getStatusColor = (status) => {
     error: "red",
   };
   return colors[status] || "gray";
+};
+
+const handleImageError = (event) => {
+  // Hide the image and show the fallback icon
+  event.target.style.display = "none";
 };
 
 // Cleanup on unmount

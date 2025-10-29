@@ -17,6 +17,8 @@ import {
   orderBy,
   deleteDoc,
   getDoc,
+  getDocs,
+  limit,
 } from "firebase/firestore";
 import { useStorage, useFirestore, useCollection } from "vuefire";
 import { useAppAuth } from "./useAuth";
@@ -66,14 +68,7 @@ export const useReceipts = () => {
         Date.now() + 5 * 365 * 24 * 60 * 60 * 1000
       );
 
-      // Create receipt record first
-      const receiptData = {
-        imageUrl: "", // Will be updated after upload
-        uploadDate: serverTimestamp(),
-        status: "uploaded" as const,
-        userId: user.value.id,
-      };
-
+      // Get the next receipt number for this user
       const receiptsCol = receiptsCollection.value;
       if (!receiptsCol) {
         return {
@@ -82,6 +77,28 @@ export const useReceipts = () => {
           error: "Receipts collection not available",
         };
       }
+
+      // Query for the latest receipt number for this user
+      const latestReceiptQuery = query(
+        receiptsCol,
+        where("userId", "==", user.value.id),
+        orderBy("receiptNumber", "desc"),
+        limit(1)
+      );
+
+      const latestReceiptSnapshot = await getDocs(latestReceiptQuery);
+      const nextReceiptNumber = latestReceiptSnapshot.empty
+        ? 1
+        : (latestReceiptSnapshot.docs[0].data().receiptNumber || 0) + 1;
+
+      // Create receipt record first
+      const receiptData = {
+        imageUrl: "", // Will be updated after upload
+        uploadDate: serverTimestamp(),
+        status: "uploaded" as const,
+        userId: user.value.id,
+        receiptNumber: nextReceiptNumber,
+      };
 
       const docRef = await addDoc(receiptsCol, receiptData as any);
 
