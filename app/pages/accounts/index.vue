@@ -76,13 +76,13 @@
                   <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">
                       <div
-                        :class="`w-10 h-10 rounded-xl flex items-center justify-center ${getTypeBgColor(
-                          account.type
-                        )}`"
+                        class="w-10 h-10 rounded-xl flex items-center justify-center"
+                        :style="getTypeBgColor(account.type)"
                       >
                         <UIcon
                           :name="getTypeIcon(account.type)"
-                          :class="`w-5 h-5 ${getTypeColor(account.type)}`"
+                          class="w-5 h-5"
+                          :style="getTypeColor(account.type)"
                         />
                       </div>
                       <div>
@@ -190,20 +190,21 @@
                 required
                 :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
               >
-                <USelectMenu
-                  v-model="form.type"
-                  :options="accountTypes"
-                  placeholder="Select type"
-                  class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500 w-full',
-                  }"
-                />
+                <div class="w-full">
+                  <UI-TypeSelectMenu
+                    v-model="form.type"
+                    :options="accountTypeOptions"
+                    placeholder="Select account type"
+                    custom-label="Add Custom Account Type..."
+                    custom-modal-title="Create New Account Type"
+                    :on-create-custom="handleCreateAccountType"
+                  />
+                </div>
               </UFormField>
 
               <UFormField
                 v-if="isCardType"
-                label="Card Type"
+                label="Card Brand"
                 name="cardType"
                 hint="Optional: Card brand (Visa, Mastercard, etc.)"
                 :ui="{
@@ -212,15 +213,16 @@
                   wrapper: 'w-full',
                 }"
               >
-                <USelectMenu
-                  v-model="form.cardType"
-                  :options="cardTypes"
-                  placeholder="Select card type"
-                  class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500 w-full',
-                  }"
-                />
+                <div class="w-full">
+                  <UI-TypeSelectMenu
+                    v-model="form.cardType"
+                    :options="cardBrandOptions"
+                    placeholder="Select card brand"
+                    custom-label="Add Custom Card Brand..."
+                    custom-modal-title="Create New Card Brand"
+                    :on-create-custom="handleCreateCardBrand"
+                  />
+                </div>
               </UFormField>
 
               <UFormField
@@ -365,6 +367,9 @@ const {
   toggleAccountStatus,
 } = useAccounts();
 
+const { allAccountTypes, createAccountType } = useAccountTypes();
+const { allCardBrands, createCardBrand } = useCardBrands();
+
 const showModal = ref(false);
 const showDeleteModal = ref(false);
 const editingAccount = ref<IAccount | null>(null);
@@ -372,76 +377,67 @@ const accountToDelete = ref<IAccount | null>(null);
 const loading = ref(false);
 const error = ref("");
 
-const accountTypes = [
-  { label: "Credit Card", value: "credit" },
-  { label: "Debit Card", value: "debit" },
-  { label: "Bank Account", value: "bank" },
-  { label: "Loan", value: "loan" },
-];
+const accountTypeOptions = computed(() => {
+  return allAccountTypes.value.map((type) => ({
+    label: type.name,
+    value: type.name,
+    icon: type.icon,
+    color: type.color,
+  }));
+});
 
-const cardTypes = [
-  { label: "Visa", value: "visa" },
-  { label: "Mastercard", value: "mastercard" },
-  { label: "American Express", value: "amex" },
-  { label: "Discover", value: "discover" },
-  { label: "Other", value: "other" },
-];
+const cardBrandOptions = computed(() => {
+  return allCardBrands.value.map((brand) => ({
+    label: brand.name,
+    value: brand.name,
+    icon: brand.icon,
+    color: brand.color,
+  }));
+});
 
 const isCardType = computed(() => {
-  return form.type === "credit" || form.type === "debit";
+  if (!form.type) return false;
+  const typeStr = String(form.type).toLowerCase();
+  return (
+    typeStr === "credit card" ||
+    typeStr === "debit card" ||
+    typeStr === "credit" ||
+    typeStr === "debit"
+  );
 });
 
 const form = reactive<IAccountForm>({
   name: "",
-  type: "credit",
+  type: "Credit Card",
   cardType: undefined,
   lastFourDigits: "",
   isActive: true,
 });
 
-const getTypeColor = (type: string) => {
-  switch (type) {
-    case "credit":
-      return "text-purple-400";
-    case "debit":
-      return "text-blue-400";
-    case "bank":
-      return "text-blue-400";
-    case "loan":
-      return "text-orange-400";
-    default:
-      return "text-slate-400";
-  }
+const getTypeColor = (type: string | undefined) => {
+  if (!type) return { color: "#94A3B8" };
+  const accountType = allAccountTypes.value.find(
+    (t) => t.name.toLowerCase() === String(type).toLowerCase()
+  );
+  return accountType ? { color: accountType.color } : { color: "#94A3B8" }; // Default slate color
 };
 
-const getTypeBgColor = (type: string) => {
-  switch (type) {
-    case "credit":
-      return "bg-purple-500/20";
-    case "debit":
-      return "bg-blue-500/20";
-    case "bank":
-      return "bg-blue-500/20";
-    case "loan":
-      return "bg-orange-500/20";
-    default:
-      return "bg-slate-500/20";
-  }
+const getTypeBgColor = (type: string | undefined) => {
+  if (!type) return { backgroundColor: "#64748B20" };
+  const accountType = allAccountTypes.value.find(
+    (t) => t.name.toLowerCase() === String(type).toLowerCase()
+  );
+  return accountType
+    ? { backgroundColor: accountType.color + "20" }
+    : { backgroundColor: "#64748B20" }; // Default slate color with opacity
 };
 
-const getTypeIcon = (type: string) => {
-  switch (type) {
-    case "credit":
-      return "i-lucide-credit-card";
-    case "debit":
-      return "i-lucide-wallet";
-    case "bank":
-      return "i-lucide-building";
-    case "loan":
-      return "i-lucide-banknote";
-    default:
-      return "i-lucide-credit-card";
-  }
+const getTypeIcon = (type: string | undefined) => {
+  if (!type) return "i-lucide-credit-card";
+  const accountType = allAccountTypes.value.find(
+    (t) => t.name.toLowerCase() === String(type).toLowerCase()
+  );
+  return accountType ? accountType.icon : "i-lucide-credit-card";
 };
 
 const formatCardType = (cardType: string) => {
@@ -472,7 +468,7 @@ const openModal = (account?: IAccount) => {
   } else {
     editingAccount.value = null;
     form.name = "";
-    form.type = "credit";
+    form.type = "Credit Card";
     form.cardType = undefined;
     form.lastFourDigits = "";
     form.isActive = true;
@@ -500,7 +496,7 @@ const submitForm = async () => {
   };
 
   // Only include cardType for credit/debit accounts
-  if ((form.type === "credit" || form.type === "debit") && form.cardType) {
+  if (isCardType.value && form.cardType) {
     accountData.cardType = form.cardType;
   }
 
@@ -589,5 +585,21 @@ const toggleStatus = async (account: IAccount) => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleCreateAccountType = async (data: {
+  name: string;
+  icon: string;
+  color: string;
+}) => {
+  return await createAccountType(data.name, data.icon, data.color);
+};
+
+const handleCreateCardBrand = async (data: {
+  name: string;
+  icon: string;
+  color: string;
+}) => {
+  return await createCardBrand(data.name, data.icon, data.color);
 };
 </script>

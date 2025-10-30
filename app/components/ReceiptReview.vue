@@ -150,40 +150,73 @@
           </UFormField>
 
           <!-- Category -->
-          <UFormField label="Category" :ui="{ label: 'text-white mb-2' }">
-            <div class="flex items-center gap-3">
+          <UFormField
+            label="Category"
+            :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+          >
+            <div class="flex items-center gap-3 w-full">
               <UIcon
                 name="i-lucide-tag"
                 class="w-5 h-5 text-slate-400 shrink-0"
               />
-              <USelectMenu
-                v-model="receiptDetails.category"
-                :options="categoryOptions"
-                placeholder="Select category"
-                class="flex-1"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500',
-                }"
-              />
+              <div class="flex-1">
+                <UI-TypeSelectMenu
+                  v-model="receiptDetails.category"
+                  :options="categoryOptions"
+                  placeholder="Select category"
+                  custom-label="Add Custom Category..."
+                  custom-modal-title="Create New Category"
+                  :on-create-custom="handleCreateCategory"
+                />
+              </div>
             </div>
           </UFormField>
 
           <!-- Payment Method -->
-          <UFormField label="Payment Method" :ui="{ label: 'text-white mb-2' }">
-            <div class="flex items-center gap-3">
+          <UFormField
+            label="Payment Method"
+            :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+          >
+            <div class="flex items-center gap-3 w-full">
               <UIcon
                 name="i-lucide-credit-card"
                 class="w-5 h-5 text-slate-400 shrink-0"
               />
-              <USelectMenu
-                v-model="receiptDetails.paymentMethod"
-                :options="paymentMethodOptions"
-                placeholder="Select payment method"
-                class="flex-1"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500',
-                }"
-              />
+              <div class="flex-1">
+                <USelectMenu
+                  v-model="receiptDetails.paymentMethod"
+                  :items="paymentMethodOptions"
+                  placeholder="Select payment method"
+                  value-key="value"
+                  class="w-full"
+                  :ui="{
+                    base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500 w-full',
+                  }"
+                >
+                  <template #item="{ item }">
+                    <div class="flex items-center gap-2">
+                      <UIcon
+                        v-if="item.icon"
+                        :name="item.icon"
+                        class="w-4 h-4 shrink-0"
+                        :style="{ color: item.color }"
+                      />
+                      <span>{{ item.label }}</span>
+                    </div>
+                  </template>
+                  <template #footer>
+                    <div class="p-2">
+                      <UButton
+                        block
+                        variant="ghost"
+                        icon="i-lucide-plus"
+                        @click="goAddAccount"
+                        >Add Account...</UButton
+                      >
+                    </div>
+                  </template>
+                </USelectMenu>
+              </div>
             </div>
           </UFormField>
 
@@ -191,22 +224,47 @@
           <UFormField
             label="Project"
             hint="Optional"
-            :ui="{ label: 'text-white mb-2', hint: 'text-slate-400' }"
+            :ui="{
+              label: 'text-white mb-2',
+              hint: 'text-slate-400',
+              wrapper: 'w-full',
+            }"
           >
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 w-full">
               <UIcon
                 name="i-lucide-folder"
                 class="w-5 h-5 text-slate-400 shrink-0"
               />
-              <USelectMenu
-                v-model="receiptDetails.projectId"
-                :options="projectOptions"
-                placeholder="Select project (optional)"
-                class="flex-1"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500',
-                }"
-              />
+              <div class="flex-1">
+                <USelectMenu
+                  v-model="receiptDetails.projectId"
+                  :items="projectOptions"
+                  value-key="value"
+                  class="w-full"
+                >
+                  <template #item="{ item }">
+                    <div class="flex items-center gap-2">
+                      <UIcon
+                        :name="item.icon"
+                        class="w-4 h-4"
+                        :style="{ color: item.color }"
+                      />
+                      <span>{{ item.label }}</span>
+                    </div>
+                  </template>
+                  <template #footer>
+                    <div class="p-2">
+                      <UButton
+                        block
+                        variant="ghost"
+                        icon="i-lucide-plus"
+                        @click="goAddProject"
+                        >Add Project...</UButton
+                      >
+                    </div>
+                  </template>
+                </USelectMenu>
+              </div>
             </div>
           </UFormField>
 
@@ -391,17 +449,18 @@
                 <div class="col-span-5">
                   <UFormField
                     label="Category"
-                    :ui="{ label: 'text-white text-sm mb-2' }"
+                    :ui="{
+                      label: 'text-white text-sm mb-2',
+                      wrapper: 'w-full',
+                    }"
                   >
-                    <USelectMenu
+                    <UI-TypeSelectMenu
                       v-model="item.category"
                       :options="categoryOptions"
                       placeholder="Select category"
-                      class="w-full"
-                      :ui="{
-                        base: 'bg-slate-700 border-slate-600 text-white focus:ring-purple-500 h-11',
-                        option: 'bg-slate-800 hover:bg-slate-700',
-                      }"
+                      custom-label="Add Custom..."
+                      custom-modal-title="Create Category"
+                      :on-create-custom="handleCreateCategory"
                     />
                   </UFormField>
                 </div>
@@ -580,7 +639,7 @@ import { useReceipts } from "~/composables/useReceipts";
 import { useProjects } from "~/composables/useProjects";
 import { useAccounts } from "~/composables/useAccounts";
 import { useCategories } from "~/composables/useCategories";
-import { DEFAULT_CATEGORIES } from "~/types";
+import { useAccountTypes } from "~/composables/useAccountTypes";
 
 const props = defineProps({
   receipt: {
@@ -596,7 +655,8 @@ const { approveReceipt: approveReceiptFn, rejectReceipt: rejectReceiptFn } =
   useReceipts();
 const { projects } = useProjects();
 const { accounts } = useAccounts();
-const { categories } = useCategories();
+const { allCategories, createCategory } = useCategories();
+const { allAccountTypes } = useAccountTypes();
 
 // Reactive state
 const items = ref([]);
@@ -627,10 +687,11 @@ const ocrData = computed(() => {
 });
 
 const categoryOptions = computed(() => {
-  const allCategories = [...DEFAULT_CATEGORIES, ...(categories?.value || [])];
-  return allCategories.map((cat) => ({
+  return allCategories.value.map((cat) => ({
     label: cat.name,
     value: cat.name,
+    icon: cat.icon,
+    color: cat.color,
   }));
 });
 
@@ -638,6 +699,8 @@ const projectOptions = computed(() => {
   return (projects?.value || []).map((project) => ({
     label: project.name,
     value: project.id,
+    icon: "i-lucide-folder",
+    color: "#8B5CF6",
   }));
 });
 
@@ -645,8 +708,33 @@ const paymentMethodOptions = computed(() => {
   return (accounts?.value || []).map((account) => ({
     label: `${account.name} (${account.type})`,
     value: account.id,
+    icon: getAccountIcon(account.type),
+    color: getAccountColor(account.type),
   }));
 });
+
+const getAccountIcon = (type) => {
+  if (!type) return "i-lucide-credit-card";
+  const accountType = allAccountTypes.value.find(
+    (t) => t.name.toLowerCase() === String(type).toLowerCase()
+  );
+  return accountType ? accountType.icon : "i-lucide-credit-card";
+};
+
+const getAccountColor = (type) => {
+  if (!type) return "#8B5CF6";
+  const accountType = allAccountTypes.value.find(
+    (t) => t.name.toLowerCase() === String(type).toLowerCase()
+  );
+  return accountType ? accountType.color : "#8B5CF6";
+};
+
+const handleCreateCategory = async (data) => {
+  return await createCategory(data.name, data.color, data.icon);
+};
+
+const goAddProject = () => router.push("/projects");
+const goAddAccount = () => router.push("/accounts");
 
 const calculatedSubtotal = computed(() => {
   return items.value.reduce((total, item) => {

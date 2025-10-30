@@ -20,8 +20,8 @@ export interface ICategory {
 export interface IAccount {
   id: string;
   name: string;
-  type: "credit" | "debit" | "bank" | "loan";
-  cardType?: "visa" | "mastercard" | "amex" | "discover" | "other";
+  type: string; // Changed to string for custom types
+  cardType?: string; // Changed to string to allow custom brands
   lastFourDigits?: string;
   isActive: boolean;
   userId: string;
@@ -37,7 +37,7 @@ export interface IProject {
   spent: number;
   startDate: Date | Timestamp;
   endDate?: Date | Timestamp;
-  status: "active" | "completed" | "paused";
+  status: string; // Changed to string for custom statuses
   userId: string;
   createdAt: Date | Timestamp;
   updatedAt: Date | Timestamp;
@@ -158,13 +158,13 @@ export interface IProjectForm {
   budget: number;
   startDate: Date;
   endDate?: Date;
-  status: "active" | "completed" | "paused";
+  status: string; // Changed to string for custom statuses
 }
 
 export interface IAccountForm {
   name: string;
-  type: "credit" | "debit" | "bank" | "loan";
-  cardType?: "visa" | "mastercard" | "amex" | "discover" | "other";
+  type: string; // Changed to string for custom types
+  cardType?: string; // Changed to string to allow custom brands
   lastFourDigits?: string;
   isActive: boolean;
 }
@@ -235,3 +235,110 @@ export const DEFAULT_CATEGORIES: Omit<
     isDefault: true,
   },
 ];
+
+// Account Type interface and constants
+export interface IAccountType {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  isDefault: boolean;
+  userId?: string;
+  createdAt: Date | Timestamp;
+}
+
+export const DEFAULT_ACCOUNT_TYPES: Omit<
+  IAccountType,
+  "id" | "userId" | "createdAt"
+>[] = [
+  {
+    name: "Credit Card",
+    icon: "i-lucide-credit-card",
+    color: "#8B5CF6",
+    isDefault: true,
+  },
+  {
+    name: "Debit Card",
+    icon: "i-lucide-credit-card",
+    color: "#06B6D4",
+    isDefault: true,
+  },
+  {
+    name: "Bank Account",
+    icon: "i-lucide-landmark",
+    color: "#10B981",
+    isDefault: true,
+  },
+  {
+    name: "Loan",
+    icon: "i-lucide-trending-up",
+    color: "#EF4444",
+    isDefault: true,
+  },
+];
+
+// Project Status interface and constants
+export interface IProjectStatus {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  isDefault: boolean;
+  userId?: string;
+  createdAt: Date | Timestamp;
+}
+
+export const DEFAULT_PROJECT_STATUSES: Omit<
+  IProjectStatus,
+  "id" | "userId" | "createdAt"
+>[] = [
+  {
+    name: "Active",
+    icon: "i-lucide-circle-dot",
+    color: "#10B981",
+    isDefault: true,
+  },
+  {
+    name: "Completed",
+    icon: "i-lucide-check-circle",
+    color: "#06B6D4",
+    isDefault: true,
+  },
+  {
+    name: "On Hold",
+    icon: "i-lucide-pause-circle",
+    color: "#F59E0B",
+    isDefault: true,
+  },
+];
+
+// Card Brand interface and constants
+export interface ICardBrand {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  isDefault: boolean;
+  userId?: string;
+  createdAt: Date | Timestamp;
+}
+
+// Card brand definitions for visual icons
+export const CARD_BRANDS = {
+  visa: { icon: "i-lucide-credit-card", color: "#1A1F71", label: "Visa" },
+  mastercard: {
+    icon: "i-lucide-credit-card",
+    color: "#EB001B",
+    label: "Mastercard",
+  },
+  amex: {
+    icon: "i-lucide-credit-card",
+    color: "#006FCF",
+    label: "American Express",
+  },
+  discover: {
+    icon: "i-lucide-credit-card",
+    color: "#FF6000",
+    label: "Discover",
+  },
+};

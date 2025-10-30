@@ -85,8 +85,11 @@
                     </p>
                   </div>
                   <UBadge
-                    :color="getStatusColor(project.status)"
                     class="shrink-0 ml-4"
+                    :style="{
+                      backgroundColor: getStatusColor(project.status) + '20',
+                      color: getStatusColor(project.status),
+                    }"
                   >
                     {{ project.status }}
                   </UBadge>
@@ -292,15 +295,16 @@
                 required
                 :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
               >
-                <USelectMenu
-                  v-model="form.status"
-                  :options="statusOptions"
-                  placeholder="Select status"
-                  class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500 w-full',
-                  }"
-                />
+                <div class="w-full">
+                  <UI-TypeSelectMenu
+                    v-model="form.status"
+                    :options="statusOptions"
+                    placeholder="Select status"
+                    custom-label="Add Custom Status..."
+                    custom-modal-title="Create New Status"
+                    :on-create-custom="handleCreateProjectStatus"
+                  />
+                </div>
               </UFormField>
 
               <div
@@ -413,6 +417,8 @@ const {
   isOverBudget,
 } = useProjects();
 
+const { allProjectStatuses, createProjectStatus } = useProjectStatuses();
+
 const showModal = ref(false);
 const showDeleteModal = ref(false);
 const editingProject = ref<IProject | null>(null);
@@ -420,11 +426,14 @@ const projectToDelete = ref<IProject | null>(null);
 const loading = ref(false);
 const error = ref("");
 
-const statusOptions = [
-  { label: "Active", value: "active" },
-  { label: "Completed", value: "completed" },
-  { label: "Paused", value: "paused" },
-];
+const statusOptions = computed(() => {
+  return allProjectStatuses.value.map((status) => ({
+    label: status.name,
+    value: status.name,
+    icon: status.icon,
+    color: status.color,
+  }));
+});
 
 const form = reactive<{
   name: string;
@@ -439,22 +448,15 @@ const form = reactive<{
   budget: 0,
   startDate: new Date().toISOString().split("T")[0],
   endDate: "",
-  status: "active",
+  status: "active" as string,
 });
 
-const getStatusColor = (
-  status: string
-): "primary" | "info" | "warning" | "neutral" => {
-  switch (status) {
-    case "active":
-      return "primary";
-    case "completed":
-      return "info";
-    case "paused":
-      return "warning";
-    default:
-      return "neutral";
-  }
+const getStatusColor = (status: string | undefined): string => {
+  if (!status) return "#94A3B8";
+  const projectStatus = allProjectStatuses.value.find(
+    (s) => s.name.toLowerCase() === String(status).toLowerCase()
+  );
+  return projectStatus ? projectStatus.color : "#94A3B8"; // Default slate color
 };
 
 const getBudgetColor = (project: IProject): "error" | "warning" | "primary" => {
@@ -471,7 +473,7 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const formatDate = (date: Date | Timestamp | string) => {
+const formatDate = (date: Date | Timestamp | string | undefined) => {
   if (!date) return "N/A";
   let d: Date;
   if (date instanceof Date) {
@@ -482,8 +484,10 @@ const formatDate = (date: Date | Timestamp | string) => {
     typeof (date as Timestamp).toDate === "function"
   ) {
     d = (date as Timestamp).toDate();
-  } else {
+  } else if (typeof date === "string") {
     d = new Date(date);
+  } else {
+    return "N/A";
   }
   return d.toLocaleDateString();
 };
@@ -508,13 +512,15 @@ const openModal = (project?: IProject) => {
     form.budget = 0;
     form.startDate = new Date().toISOString().split("T")[0];
     form.endDate = "";
-    form.status = "active";
+    form.status = "active" as string;
   }
   error.value = "";
   showModal.value = true;
 };
 
-const formatDateForInput = (date: Date | Timestamp | string): string => {
+const formatDateForInput = (
+  date: Date | Timestamp | string | undefined
+): string => {
   if (!date) return "";
   let d: Date;
   if (date instanceof Date) {
@@ -525,8 +531,10 @@ const formatDateForInput = (date: Date | Timestamp | string): string => {
     typeof (date as Timestamp).toDate === "function"
   ) {
     d = (date as Timestamp).toDate();
-  } else {
+  } else if (typeof date === "string") {
     d = new Date(date);
+  } else {
+    return "";
   }
   return d.toISOString().split("T")[0];
 };
@@ -607,5 +615,13 @@ const handleDelete = async () => {
   }
 
   loading.value = false;
+};
+
+const handleCreateProjectStatus = async (data: {
+  name: string;
+  icon: string;
+  color: string;
+}) => {
+  return await createProjectStatus(data.name, data.icon, data.color);
 };
 </script>
