@@ -4,7 +4,6 @@ export default defineEventHandler(async (event) => {
       messages: Array<{ role: string; content: string }>;
       context: any;
     }>(event);
-    // Placeholder implementation: echo last user message with a friendly note and mention number of expenses known
     const last = [...(body?.messages || [])]
       .reverse()
       .find((m) => m.role === "user");
