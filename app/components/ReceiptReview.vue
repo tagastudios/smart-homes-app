@@ -831,7 +831,15 @@ const approveReceipt = async () => {
       props.receipt.id,
       items.value,
       receiptDetails.value.projectId || "",
-      receiptDetails.value.paymentMethod || ""
+      receiptDetails.value.paymentMethod || "",
+      {
+        date: receiptDetails.value.date,
+        merchant: receiptDetails.value.merchant,
+        notes: receiptDetails.value.notes,
+        totalAmount: receiptDetails.value.totalAmount,
+        imageUrl: props.receipt.imageUrl,
+        ocrData: ocrData.value,
+      }
     );
 
     // Emit approved event with data

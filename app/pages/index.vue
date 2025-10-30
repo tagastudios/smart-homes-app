@@ -11,6 +11,7 @@
 
           <!-- Message button with glassmorphism -->
           <UButton
+            to="/chat"
             variant="ghost"
             icon="i-lucide-message-square"
             class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl hover:bg-white/30 transition-all text-white flex items-center justify-center"
@@ -41,11 +42,11 @@
           <UCard class="glass rounded-2xl p-3">
             <p class="text-purple-200 text-sm mb-1">Pending</p>
             <p class="text-2xl font-bold text-white mb-1">
-              {{ formatCurrency(pendingReceipts.totalAmount) }}
+              {{ formatCurrency(pendingStats.totalAmount) }}
             </p>
             <div class="flex items-center gap-1">
               <p class="text-sm text-purple-200">
-                {{ pendingReceipts.count }} items
+                {{ pendingStats.count }} items
               </p>
             </div>
           </UCard>
@@ -109,37 +110,85 @@
 
         <div class="space-y-3">
           <UCard
-            v-for="transaction in recentTransactions"
-            :key="transaction.id"
-            class="bg-slate-900 rounded-2xl p-3 border border-slate-800"
+            v-for="tx in recentRealTransactions"
+            :key="tx.id"
+            class="bg-slate-900 rounded-2xl p-3 border border-slate-800 cursor-pointer"
+            @click="goToTx(tx)"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div
-                  :class="`w-10 h-10 rounded-xl flex items-center justify-center ${transaction.bgColor}`"
+                  class="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-800"
                 >
                   <UIcon
-                    :name="transaction.icon"
-                    :class="`w-5 h-5 ${transaction.iconColor}`"
+                    :name="
+                      tx.type === 'expense'
+                        ? 'i-lucide-trending-down'
+                        : 'i-lucide-trending-up'
+                    "
+                    class="w-5 h-5"
+                    :class="
+                      tx.type === 'expense' ? 'text-red-400' : 'text-green-400'
+                    "
                   />
                 </div>
                 <div>
-                  <p class="text-white font-medium">
-                    {{ transaction.description }}
-                  </p>
+                  <p class="text-white font-medium">{{ tx.description }}</p>
                   <p class="text-slate-400 text-sm">
-                    {{ transaction.location }}
+                    {{ formatDate(tx.date) }}
                   </p>
                 </div>
               </div>
               <div class="text-right">
-                <p :class="`font-semibold ${transaction.amountColor}`">
-                  {{ formatAmount(transaction.amount, transaction.type) }}
+                <p
+                  :class="
+                    tx.type === 'expense'
+                      ? 'text-red-400 font-semibold'
+                      : 'text-green-400 font-semibold'
+                  "
+                >
+                  {{ formatAmount(tx.amount, tx.type) }}
                 </p>
-                <p class="text-slate-400 text-sm">{{ transaction.date }}</p>
               </div>
             </div>
           </UCard>
+        </div>
+
+        <!-- Pending Receipts -->
+        <div class="mt-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-white">Pending Receipts</h2>
+          </div>
+          <div class="space-y-3">
+            <UCard
+              v-for="r in pendingList"
+              :key="r.id"
+              class="bg-slate-900 rounded-2xl p-3 border border-slate-800 cursor-pointer"
+              @click="goReceipt(r.id)"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-lucide-receipt-text"
+                      class="w-5 h-5 text-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <p class="text-white font-medium">
+                      Receipt #{{ r.receiptNumber || r.id.slice(-6) }}
+                    </p>
+                    <p class="text-slate-400 text-sm">
+                      {{ formatDate(r.uploadDate) }}
+                    </p>
+                  </div>
+                </div>
+                <UBadge class="bg-amber-500/15 text-amber-400">Pending</UBadge>
+              </div>
+            </UCard>
+          </div>
         </div>
       </div>
     </div>
@@ -147,6 +196,9 @@
 </template>
 
 <script setup lang="ts">
+import { useExpenses } from "~/composables/useExpenses";
+import { useIncomes } from "~/composables/useIncomes";
+import { useReceipts } from "~/composables/useReceipts";
 // Define page meta following Nuxt best practices
 definePageMeta({
   middleware: "auth",
@@ -154,14 +206,75 @@ definePageMeta({
   layout: "default",
 });
 
-// Use dashboard stats composable
-const {
-  thisMonthExpenses,
-  pendingReceipts,
-  expensesPercentageChange,
-  recentTransactions,
-  formatCurrency,
-  formatPercentage,
-  formatAmount,
-} = useDashboardStats();
+const { expenses } = useExpenses();
+const { incomes } = useIncomes();
+const { receipts } = useReceipts();
+
+const formatCurrency = (amount: number) => `$${(amount || 0).toLocaleString()}`;
+const formatAmount = (amount: number, type: "expense" | "income") =>
+  `${type === "expense" ? "-" : "+"}$${(amount || 0).toLocaleString()}`;
+const normalizeDate = (d: unknown): Date => {
+  const v = d as { toDate?: () => Date } | string | number | Date | undefined;
+  const maybeDate =
+    v && typeof (v as any)?.toDate === "function" ? (v as any).toDate() : v;
+  return new Date((maybeDate as string | number | Date) ?? Date.now());
+};
+const formatDate = (d: unknown) => normalizeDate(d).toLocaleDateString();
+const formatPercentage = (v: number) => `+${v}%`;
+
+const thisMonthExpenses = computed(() => {
+  const now = new Date();
+  const m = now.getMonth();
+  const y = now.getFullYear();
+  return (expenses.value || [])
+    .filter((e) => {
+      const d = normalizeDate(e.date as unknown);
+      return d.getMonth() === m && d.getFullYear() === y;
+    })
+    .reduce((s, e) => s + (e.amount || 0), 0);
+});
+
+const expensesPercentageChange = computed(() => 0);
+
+const recentRealTransactions = computed(() => {
+  const ex = (expenses.value || []).map((e) => ({
+    id: e.id,
+    type: "expense" as const,
+    amount: e.amount,
+    description: e.description || e.category,
+    date: e.date,
+  }));
+  const inc = (incomes.value || []).map((i) => ({
+    id: i.id,
+    type: "income" as const,
+    amount: i.amount,
+    description: i.description || "Income",
+    date: i.date,
+  }));
+  return [...ex, ...inc]
+    .sort((a, b) => {
+      const da = normalizeDate(a.date as unknown);
+      const db = normalizeDate(b.date as unknown);
+      return db.getTime() - da.getTime();
+    })
+    .slice(0, 6);
+});
+
+const pendingList = computed(() =>
+  (receipts.value || []).filter(
+    (r) => r.status === "uploaded" || r.status === "processing"
+  )
+);
+const pendingStats = computed(() => ({
+  count: pendingList.value.length,
+  totalAmount: 0,
+}));
+
+const router = useRouter();
+const goToTx = (tx: { id: string; type: "expense" | "income" }) => {
+  router.push(
+    tx.type === "expense" ? `/expenses/${tx.id}` : `/incomes/${tx.id}`
+  );
+};
+const goReceipt = (id: string) => router.push(`/receipts/${id}`);
 </script>

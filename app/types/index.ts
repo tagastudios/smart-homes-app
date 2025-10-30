@@ -48,7 +48,7 @@ export interface IReceipt {
   imageUrl: string;
   uploadDate: Date | Timestamp;
   processedDate?: Date | Timestamp;
-  status: "uploaded" | "processing" | "processed" | "error";
+  status: "uploaded" | "processing" | "processed" | "approved" | "error";
   userId: string;
   errorMessage?: string;
   receiptNumber?: number;

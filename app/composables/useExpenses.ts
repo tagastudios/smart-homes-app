@@ -72,6 +72,10 @@ export const useExpenses = () => {
     if (!user.value || !expensesCollection.value)
       throw new Error("User not authenticated");
 
+    const dateVal =
+      (data as any).date instanceof Date
+        ? (data as any).date
+        : new Date((data as any).date);
     const expenseData = {
       ...data,
       receiptId,
@@ -79,7 +83,7 @@ export const useExpenses = () => {
       ocrData,
       isManualEntry: !receiptId,
       userId: user.value.id,
-      date: Timestamp.fromDate(data.date),
+      date: Timestamp.fromDate(dateVal),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };

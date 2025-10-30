@@ -6,18 +6,17 @@
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
       >
         <div class="flex items-center justify-between">
+          <UButton
+            to="/"
+            variant="ghost"
+            class="bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl px-3 py-2 text-white"
+            icon="i-lucide-arrow-left"
+          />
           <div>
             <h1 class="text-2xl font-bold text-white mb-1">Add Income</h1>
             <p class="text-purple-200 text-sm">Record a new income entry</p>
           </div>
-          <UButton
-            to="/"
-            variant="ghost"
-            class="text-white/90"
-            icon="i-lucide-arrow-left"
-          >
-            Back
-          </UButton>
+          <div class="w-10" />
         </div>
       </div>
 
@@ -95,13 +94,23 @@
               >
                 <template #item="{ item }">
                   <div class="flex items-center gap-2">
-                    <UIcon :name="item.icon" class="w-4 h-4" :style="{ color: item.color }" />
+                    <UIcon
+                      :name="item.icon"
+                      class="w-4 h-4"
+                      :style="{ color: item.color }"
+                    />
                     <span>{{ item.label }}</span>
                   </div>
                 </template>
                 <template #footer>
                   <div class="p-2">
-                    <UButton block variant="ghost" icon="i-lucide-plus" @click="goAddProject">Add Project...</UButton>
+                    <UButton
+                      block
+                      variant="ghost"
+                      icon="i-lucide-plus"
+                      @click="goAddProject"
+                      >Add Project...</UButton
+                    >
                   </div>
                 </template>
               </USelectMenu>

@@ -23,6 +23,7 @@ import {
 import { useStorage, useFirestore, useCollection } from "vuefire";
 import { useAppAuth } from "./useAuth";
 import type { IReceipt, IOcrResult } from "~/types";
+import { useExpenses } from "./useExpenses";
 
 export const useReceipts = () => {
   const storage = useStorage();
@@ -246,19 +247,63 @@ export const useReceipts = () => {
       category: string;
     }>,
     projectId: string,
-    accountId: string
+    accountId: string,
+    details?: {
+      date?: any;
+      merchant?: string;
+      notes?: string;
+      totalAmount?: number;
+      imageUrl?: string;
+      ocrData?: any;
+    }
   ) => {
     if (!receiptsCollection.value) return { error: "Collection not available" };
 
     try {
-      // Update receipt status to approved
+      // Create ONE expense per receipt
+      const { createExpense } = useExpenses();
+      const subtotal = items.reduce(
+        (s, it) => s + (it.price || 0) * (it.quantity || 1),
+        0
+      );
+      const amount =
+        details?.totalAmount && details.totalAmount > 0
+          ? details.totalAmount
+          : subtotal;
+      const description = details?.merchant
+        ? `${details.merchant} - Receipt`
+        : "Receipt";
+      const primaryCategory = items[0]?.category || "Uncategorized";
+
+      const payload: any = {
+        amount,
+        category: primaryCategory,
+        projectId: projectId || undefined,
+        accountId: accountId || undefined,
+        description,
+        date: details?.date ? new Date(details.date) : new Date(),
+        receiptId,
+        receiptImageUrl: details?.imageUrl,
+        ocrData: details?.ocrData,
+      };
+
+      const { id: expenseId, error: createErr } = await createExpense(
+        payload as any,
+        receiptId,
+        details?.imageUrl,
+        details?.ocrData
+      );
+      if (createErr) throw new Error(createErr);
+
+      // Update receipt status to approved with cross-reference
       await updateDoc(doc(receiptsCollection.value, receiptId), {
         status: "approved",
         approvedAt: serverTimestamp(),
         approvedItems: items,
         projectId,
         accountId,
-      });
+        expenseIds: expenseId ? [expenseId] : [],
+      } as any);
 
       return { error: null };
     } catch (error: unknown) {

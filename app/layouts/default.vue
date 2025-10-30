@@ -130,10 +130,10 @@ const handleFabAction = (action: string) => {
       router.push("/receipts");
       break;
     case "add-expense":
-      router.push("/expenses");
+      router.push("/expenses/add");
       break;
     case "add-income":
-      router.push("/incomes");
+      router.push("/incomes/add");
       break;
   }
 };

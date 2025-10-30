@@ -6,20 +6,19 @@
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
       >
         <div class="flex items-center justify-between">
+          <UButton
+            to="/"
+            variant="ghost"
+            class="bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl px-3 py-2 text-white"
+            icon="i-lucide-arrow-left"
+          />
           <div>
             <h1 class="text-2xl font-bold text-white mb-1">Reports</h1>
             <p class="text-purple-200 text-sm">
               Financial analytics and insights
             </p>
           </div>
-          <UButton
-            to="/"
-            variant="ghost"
-            class="text-white/90"
-            icon="i-lucide-arrow-left"
-          >
-            Back
-          </UButton>
+          <div class="w-10" />
         </div>
       </div>
 
@@ -230,6 +229,21 @@
             />
           </UCard>
         </div>
+
+        <!-- Export at bottom -->
+        <div class="pt-2">
+          <UCard class="bg-slate-900 border-slate-800">
+            <div class="sm:col-span-2 lg:col-span-1 flex items-end">
+              <UButton
+                variant="outline"
+                class="w-full"
+                icon="i-lucide-download"
+                @click="exportCsv"
+                >Export CSV</UButton
+              >
+            </div>
+          </UCard>
+        </div>
       </div>
     </div>
   </ClientOnly>
@@ -358,7 +372,18 @@ const lineOptions = computed(() => ({
   chart: { toolbar: { show: false }, foreColor: "#94a3b8" },
   stroke: { curve: "smooth" },
   colors: ["#f87171", "#60a5fa"],
-  xaxis: { categories: lineSeries.value[0]?.data.map((_, i) => i) },
+  xaxis: {
+    categories: Array.from(
+      new Set([
+        ...groupByDate(filteredExpenses.value, (e) => e.amount || 0).map(
+          ([d]) => d
+        ),
+        ...groupByDate(filteredIncomes.value, (i) => i.amount || 0).map(
+          ([d]) => d
+        ),
+      ])
+    ).sort(),
+  },
   theme: { mode: "dark" },
 }));
 

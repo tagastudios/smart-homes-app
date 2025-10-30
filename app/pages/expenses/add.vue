@@ -6,18 +6,17 @@
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
       >
         <div class="flex items-center justify-between">
+          <UButton
+            to="/"
+            variant="ghost"
+            class="bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl px-3 py-2 text-white"
+            icon="i-lucide-arrow-left"
+          />
           <div>
             <h1 class="text-2xl font-bold text-white mb-1">Add Expense</h1>
             <p class="text-purple-200 text-sm">Record a new business expense</p>
           </div>
-          <UButton
-            to="/"
-            variant="ghost"
-            class="text-white/90"
-            icon="i-lucide-arrow-left"
-          >
-            Back
-          </UButton>
+          <div class="w-10" />
         </div>
       </div>
 
@@ -52,16 +51,23 @@
               label="Category"
               :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
             >
-              <div class="w-full">
-                <UI-TypeSelectMenu
-                  v-model="form.category"
-                  :options="categoryOptions"
-                  placeholder="Select category"
-                  custom-label="Add Custom Category..."
-                  custom-modal-title="Create Category"
-                  :on-create-custom="handleCreateCategory"
-                />
-              </div>
+              <USelectMenu
+                v-model="form.category"
+                :items="categoryOptions"
+                value-key="value"
+                class="w-full"
+              >
+                <template #item="{ item }">
+                  <div class="flex items-center gap-2">
+                    <UIcon
+                      :name="item.icon || 'i-lucide-tag'"
+                      class="w-4 h-4"
+                      :style="{ color: item.color }"
+                    />
+                    <span>{{ item.label }}</span>
+                  </div>
+                </template>
+              </USelectMenu>
             </UFormField>
 
             <!-- Account / Payment Method -->
@@ -112,13 +118,23 @@
               >
                 <template #item="{ item }">
                   <div class="flex items-center gap-2">
-                    <UIcon :name="item.icon" class="w-4 h-4" :style="{ color: item.color }" />
+                    <UIcon
+                      :name="item.icon"
+                      class="w-4 h-4"
+                      :style="{ color: item.color }"
+                    />
                     <span>{{ item.label }}</span>
                   </div>
                 </template>
                 <template #footer>
                   <div class="p-2">
-                    <UButton block variant="ghost" icon="i-lucide-plus" @click="goAddProject">Add Project...</UButton>
+                    <UButton
+                      block
+                      variant="ghost"
+                      icon="i-lucide-plus"
+                      @click="goAddProject"
+                      >Add Project...</UButton
+                    >
                   </div>
                 </template>
               </USelectMenu>
@@ -151,10 +167,11 @@
                 >Cancel</UButton
               >
               <UButton
-                :disabled="!isValid || submitting"
+                :disabled="submitting"
                 :loading="submitting"
                 class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white"
                 @click="submit"
+                type="button"
               >
                 Add Expense
               </UButton>
@@ -227,8 +244,15 @@ const accountOptions = computed(() =>
   })
 );
 
+const getId = (val) =>
+  val && typeof val === "object" ? val.value || val.id : val;
 const isValid = computed(() => {
-  return !!form.amount && !!form.category && !!form.accountId && !!form.dateStr;
+  const accountId = getId(form.accountId);
+  const category =
+    typeof form.category === "object"
+      ? form.category?.value || form.category?.name
+      : form.category;
+  return Number(form.amount) > 0 && !!category && !!accountId && !!form.dateStr;
 });
 
 const handleCreateCategory = async (data) => {
@@ -238,18 +262,31 @@ const handleCreateCategory = async (data) => {
 const goAddProject = () => router.push("/projects");
 
 const submit = async () => {
-  if (!isValid.value || submitting.value) return;
+  if (submitting.value) return;
+  if (!isValid.value) {
+    toast.add({
+      title: "Incomplete form",
+      description: "Please enter an amount, category, account and date.",
+      color: "amber",
+    });
+    return;
+  }
   submitting.value = true;
   try {
     const payload = {
       amount: Number(form.amount),
-      category: form.category,
-      projectId: form.projectId || undefined,
-      accountId: form.accountId,
+      category: String(
+        (typeof form.category === "object"
+          ? form.category?.value || form.category?.name
+          : form.category) || ""
+      ),
+      projectId: getId(form.projectId) || undefined,
+      accountId: getId(form.accountId),
       description: form.description || "",
       date: new Date(form.dateStr),
       isManualEntry: true,
     };
+    console.debug("[AddExpense] Submitting payload", payload);
     const { error } = await createExpense(payload);
     if (error) throw new Error(error);
     toast.add({
