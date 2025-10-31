@@ -1,9 +1,12 @@
+import { useCategories } from "./useCategories";
+
 export const useChatContext = () => {
   const { expenses } = useExpenses();
   const { incomes } = useIncomes();
   const { projects } = useProjects();
   const { accounts } = useAccounts();
   const { receipts } = useReceipts();
+  const { allCategories } = useCategories();
 
   const formatDate = (d: any) => {
     const v = d && typeof d.toDate === "function" ? d.toDate() : d;
@@ -74,12 +77,20 @@ export const useChatContext = () => {
       errorMessage: r.errorMessage,
     }));
 
+    // Include ALL categories
+    const cats = (allCategories.value || []).map((c) => ({
+      id: c.id,
+      name: c.name,
+      color: c.color,
+    }));
+
     return {
       expenses: ex,
       incomes: inc,
       accounts: acc,
       projects: proj,
       receipts: receiptsData,
+      categories: cats,
     };
   };
 

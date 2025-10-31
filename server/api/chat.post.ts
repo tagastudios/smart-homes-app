@@ -1,5 +1,73 @@
 import OpenAI from "openai";
 
+interface QueryIntent {
+  timeFilter?: {
+    type:
+      | "thisMonth"
+      | "lastMonth"
+      | "thisYear"
+      | "lastYear"
+      | "thisWeek"
+      | "lastWeek"
+      | "last30Days"
+      | "last90Days"
+      | "yearToDate"
+      | "custom";
+    startDate?: string; // YYYY-MM-DD
+    endDate?: string; // YYYY-MM-DD
+    year?: number;
+    month?: number; // 1-12
+    quarter?: number; // 1-4
+  };
+  amountFilter?: {
+    type: "min" | "max" | "range" | "above" | "below";
+    min?: number;
+    max?: number;
+    value?: number;
+    sortBy?: "amount";
+    sortOrder?: "asc" | "desc";
+  };
+  categoryFilter?: {
+    categories: string[]; // Category names
+  };
+  projectFilter?: {
+    projects: string[]; // Project names or IDs
+  };
+  accountFilter?: {
+    accounts: string[]; // Account names or IDs
+  };
+  merchantFilter?: {
+    merchants: string[]; // Merchant names
+  };
+  receiptStatusFilter?: {
+    statuses: (
+      | "uploaded"
+      | "processing"
+      | "processed"
+      | "approved"
+      | "error"
+    )[];
+  };
+  sortBy?: {
+    field: "date" | "amount" | "category" | "project" | "account";
+    order: "asc" | "desc";
+  };
+  limit?: number;
+  aggregation?: {
+    type: "top" | "bottom";
+    count: number;
+    by?: "amount" | "date";
+  };
+  queryType?:
+    | "expenses"
+    | "incomes"
+    | "projects"
+    | "accounts"
+    | "receipts"
+    | "mixed"
+    | "all";
+}
+
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody<{
@@ -28,98 +96,422 @@ export default defineEventHandler(async (event) => {
       apiKey: apiKey.trim(),
     });
 
-    // Build context summary for AI
+    // Get all context data
     const contextData = body.context || {};
-    const expenses = contextData.expenses || [];
-    const incomes = contextData.incomes || [];
-    const projects = contextData.projects || [];
-    const accounts = contextData.accounts || [];
-    const receipts = contextData.receipts || [];
+    const allExpenses = contextData.expenses || [];
+    const allIncomes = contextData.incomes || [];
+    const allProjects = contextData.projects || [];
+    const allAccounts = contextData.accounts || [];
+    const allReceipts = contextData.receipts || [];
+    const allCategories = contextData.categories || [];
 
-    // Helper to find account/project names by ID
+    // Helper functions
     const getAccountName = (id: string) =>
-      accounts.find((a: any) => a.id === id)?.name || id;
+      allAccounts.find((a: any) => a.id === id)?.name || id;
     const getProjectName = (id: string) =>
-      projects.find((p: any) => p.id === id)?.name || id;
-
-    // Helper function to search expenses
-    const searchExpenses = (query: string) => {
-      const lowerQuery = query.toLowerCase();
-      return expenses.filter(
-        (e: any) =>
-          e.description?.toLowerCase().includes(lowerQuery) ||
-          e.category?.toLowerCase().includes(lowerQuery)
-      );
-    };
+      allProjects.find((p: any) => p.id === id)?.name || id;
 
     // Helper function to calculate totals
     const calculateTotal = (items: any[]) => {
       return items.reduce((sum, item) => sum + (item.amount || 0), 0);
     };
 
-    // Process the query to extract intent
-    const userQuery = lastUserMessage.content.toLowerCase();
+    // Step 1: Extract query intent using AI (multilingual)
+    const intentPrompt = `Extract filter parameters from the user's financial query. The query may be in any language.
 
-    // Check for merchant-specific queries (e.g., "Home Depot", "Lowe's")
-    let merchantMatches: any[] = [];
-    const merchantKeywords = [
-      "home depot",
-      "lowes",
-      "lowe's",
-      "menards",
-      "ace hardware",
-      "walmart",
-      "amazon",
-    ];
+Available categories: ${
+      allCategories.map((c: any) => c.name).join(", ") || "None"
+    }
+Available projects: ${allProjects.map((p: any) => p.name).join(", ") || "None"}
+Available accounts: ${allAccounts.map((a: any) => a.name).join(", ") || "None"}
 
-    // First, try exact keyword matches
-    for (const keyword of merchantKeywords) {
-      if (userQuery.includes(keyword)) {
-        merchantMatches = searchExpenses(keyword);
-        break;
+Return JSON with this structure:
+{
+  "timeFilter": {
+    "type": "thisMonth|lastMonth|thisYear|lastYear|thisWeek|lastWeek|last30Days|last90Days|yearToDate|custom",
+    "startDate": "YYYY-MM-DD" (only if custom),
+    "endDate": "YYYY-MM-DD" (only if custom),
+    "year": 2024 (if specific year mentioned),
+    "month": 1-12 (if specific month),
+    "quarter": 1-4 (if quarter mentioned)
+  },
+  "amountFilter": {
+    "type": "min|max|range|above|below",
+    "min": number (for range/above),
+    "max": number (for range/below),
+    "value": number (for above/below single value),
+    "sortBy": "amount" (if sorting by amount),
+    "sortOrder": "asc|desc"
+  },
+  "categoryFilter": {
+    "categories": ["Category1", "Category2"] (array of category names from available list)
+  },
+  "projectFilter": {
+    "projects": ["Project1", "Project2"] (array of project names or IDs)
+  },
+  "accountFilter": {
+    "accounts": ["Account1", "Account2"] (array of account names or IDs)
+  },
+  "merchantFilter": {
+    "merchants": ["Merchant1", "Merchant2"] (merchant names extracted from query or OCR data)
+  },
+  "receiptStatusFilter": {
+    "statuses": ["uploaded", "processing", "processed", "approved", "error"]
+  },
+  "sortBy": {
+    "field": "date|amount|category|project|account",
+    "order": "asc|desc"
+  },
+  "limit": 100 (default, or specific number if "top N" or "bottom N" mentioned),
+  "aggregation": {
+    "type": "top|bottom",
+    "count": number (if "top 10", "bottom 5" etc mentioned),
+    "by": "amount|date"
+  },
+  "queryType": "expenses|incomes|projects|accounts|receipts|mixed|all"
+}
+
+Rules:
+- Only include fields that are relevant to the query
+- If query mentions "most expensive", "highest", "largest" → amountFilter.type="max", sortBy.amount="desc"
+- If query mentions "cheapest", "lowest", "smallest" → amountFilter.type="min", sortBy.amount="asc"
+- If query mentions "oldest", "earliest", "first" → sortBy.field="date", sortBy.order="asc"
+- If query mentions "newest", "latest", "most recent", "last" → sortBy.field="date", sortBy.order="desc"
+- If time period mentioned, set appropriate timeFilter
+- Match category/project/account names to available lists (case-insensitive, partial match OK)
+- If "top N" or "bottom N" mentioned, set aggregation with count=N
+- Default limit is 100 unless aggregation specifies a different number
+- If query is ambiguous, prefer "all" or "mixed" queryType
+
+User query: "${lastUserMessage.content}"
+
+Return only valid JSON, no additional text.`;
+
+    const intentCompletion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a query intent extractor. Analyze financial queries in any language and extract filter parameters. Always return valid JSON.",
+        },
+        {
+          role: "user",
+          content: intentPrompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1,
+      max_tokens: 800,
+    });
+
+    let intent: QueryIntent = {
+      limit: 100,
+      queryType: "all",
+    };
+
+    try {
+      const intentResponse = intentCompletion.choices[0]?.message?.content;
+      if (intentResponse) {
+        intent = { ...intent, ...JSON.parse(intentResponse) };
       }
+    } catch (e) {
+      console.error("Failed to parse intent:", e);
+      // Continue with default intent
     }
 
-    // If no merchant keyword found, extract merchant names from expense descriptions
-    // and try to match with user query
-    if (merchantMatches.length === 0 && expenses.length > 0) {
-      // Extract potential merchant names from descriptions (first part before " - ")
-      const commonMerchants = new Map<string, any[]>();
-      expenses.forEach((e: any) => {
-        const desc = e.description || "";
-        // Look for patterns like "Home Depot - Receipt" or "HOME DEPOT"
-        const merchantPart = desc.split(" - ")[0].trim().toLowerCase();
-        if (merchantPart && merchantPart.length > 2) {
-          if (!commonMerchants.has(merchantPart)) {
-            commonMerchants.set(merchantPart, []);
-          }
-          commonMerchants.get(merchantPart)!.push(e);
-        }
-      });
+    // Step 2: Apply filters based on intent
+    const applyTimeFilter = (items: any[], field: string = "date"): any[] => {
+      if (!intent.timeFilter) return items;
+      const filter = intent.timeFilter;
+      const now = new Date();
+      let startDate: Date | null = null;
+      let endDate: Date | null = null;
 
-      // Try to match user query with merchant names (fuzzy matching)
-      for (const [merchant, matchedExpenses] of commonMerchants.entries()) {
-        // Check if user query contains the merchant name or vice versa
-        if (
-          userQuery.includes(merchant) ||
-          merchant.includes(userQuery) ||
-          // Also check for partial matches (e.g., "home depot" matches "home")
-          merchant.split(/\s+/).some((word) => userQuery.includes(word)) ||
-          userQuery.split(/\s+/).some((word) => merchant.includes(word))
-        ) {
-          merchantMatches = matchedExpenses;
+      switch (filter.type) {
+        case "thisMonth":
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0,
+            23,
+            59,
+            59
+          );
+          break;
+        case "lastMonth":
+          startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+          break;
+        case "thisYear":
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+          break;
+        case "lastYear":
+          startDate = new Date(now.getFullYear() - 1, 0, 1);
+          endDate = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59);
+          break;
+        case "thisWeek": {
+          const dayOfWeek = now.getDay();
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - dayOfWeek);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(startDate);
+          endDate.setDate(startDate.getDate() + 6);
+          endDate.setHours(23, 59, 59, 999);
           break;
         }
+        case "lastWeek": {
+          const lastWeekDay = now.getDay();
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - lastWeekDay - 7);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(startDate);
+          endDate.setDate(startDate.getDate() + 6);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        }
+        case "last30Days":
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - 30);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(now);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case "last90Days":
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - 90);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(now);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case "yearToDate":
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = new Date(now);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case "custom":
+          if (filter.startDate) startDate = new Date(filter.startDate);
+          if (filter.endDate) endDate = new Date(filter.endDate);
+          break;
       }
+
+      if (filter.year && !filter.month) {
+        startDate = new Date(filter.year, 0, 1);
+        endDate = new Date(filter.year, 11, 31, 23, 59, 59);
+      }
+
+      if (filter.month && filter.year) {
+        startDate = new Date(filter.year, filter.month - 1, 1);
+        endDate = new Date(filter.year, filter.month, 0, 23, 59, 59);
+      }
+
+      if (filter.quarter && filter.year) {
+        const quarterStartMonth = (filter.quarter - 1) * 3;
+        startDate = new Date(filter.year, quarterStartMonth, 1);
+        endDate = new Date(filter.year, quarterStartMonth + 3, 0, 23, 59, 59);
+      }
+
+      if (!startDate || !endDate) return items;
+
+      return items.filter((item: any) => {
+        const itemDate = new Date(item[field]);
+        return itemDate >= startDate! && itemDate <= endDate!;
+      });
+    };
+
+    const applyCategoryFilter = (items: any[]): any[] => {
+      if (!intent.categoryFilter?.categories.length) return items;
+      const categoryNames = intent.categoryFilter.categories.map((c) =>
+        c.toLowerCase()
+      );
+      return items.filter((item: any) =>
+        categoryNames.some((cat) => item.category?.toLowerCase().includes(cat))
+      );
+    };
+
+    const applyProjectFilter = (items: any[]): any[] => {
+      if (!intent.projectFilter?.projects.length) return items;
+      const projectNames = intent.projectFilter.projects.map((p) =>
+        p.toLowerCase()
+      );
+      return items.filter((item: any) => {
+        if (!item.projectId) return false;
+        const projectName = getProjectName(item.projectId).toLowerCase();
+        return projectNames.some((p) => projectName.includes(p));
+      });
+    };
+
+    const applyAccountFilter = (items: any[]): any[] => {
+      if (!intent.accountFilter?.accounts.length) return items;
+      const accountNames = intent.accountFilter.accounts.map((a) =>
+        a.toLowerCase()
+      );
+      return items.filter((item: any) => {
+        if (!item.accountId) return false;
+        const accountName = getAccountName(item.accountId).toLowerCase();
+        return accountNames.some((a) => accountName.includes(a));
+      });
+    };
+
+    const applyMerchantFilter = (items: any[]): any[] => {
+      if (!intent.merchantFilter?.merchants.length) return items;
+      const merchantNames = intent.merchantFilter.merchants.map((m) =>
+        m.toLowerCase()
+      );
+      return items.filter((item: any) => {
+        const description = (item.description || "").toLowerCase();
+        const ocrMerchant = (item.ocrData?.merchant || "").toLowerCase();
+        return merchantNames.some(
+          (m) => description.includes(m) || ocrMerchant.includes(m)
+        );
+      });
+    };
+
+    const applyAmountFilter = (items: any[]): any[] => {
+      if (!intent.amountFilter) return items;
+      const filter = intent.amountFilter;
+
+      switch (filter.type) {
+        case "above":
+          return items.filter(
+            (item: any) => item.amount >= (filter.value || 0)
+          );
+        case "below":
+          return items.filter(
+            (item: any) => item.amount <= (filter.value || 0)
+          );
+        case "range":
+          return items.filter(
+            (item: any) =>
+              item.amount >= (filter.min || 0) &&
+              item.amount <= (filter.max || Infinity)
+          );
+        default:
+          return items;
+      }
+    };
+
+    const applySort = (items: any[]): any[] => {
+      // Handle aggregation sort (top/bottom by amount)
+      if (intent.aggregation?.by === "amount") {
+        return [...items].sort((a, b) => {
+          if (intent.aggregation?.type === "top") {
+            return b.amount - a.amount; // Descending for top
+          } else {
+            return a.amount - b.amount; // Ascending for bottom
+          }
+        });
+      }
+
+      if (intent.aggregation?.by === "date") {
+        return [...items].sort((a, b) => {
+          if (intent.aggregation?.type === "top") {
+            return new Date(b.date).getTime() - new Date(a.date).getTime(); // Most recent first
+          } else {
+            return new Date(a.date).getTime() - new Date(b.date).getTime(); // Oldest first
+          }
+        });
+      }
+
+      // Handle amount filter sorting
+      if (intent.amountFilter?.sortBy === "amount") {
+        const order = intent.amountFilter.sortOrder || "desc";
+        return [...items].sort((a, b) => {
+          return order === "asc" ? a.amount - b.amount : b.amount - a.amount;
+        });
+      }
+
+      if (!intent.sortBy) {
+        // Default: sort by date descending (most recent first)
+        return [...items].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+      }
+
+      const { field, order } = intent.sortBy;
+      const multiplier = order === "asc" ? 1 : -1;
+
+      return [...items].sort((a, b) => {
+        switch (field) {
+          case "date":
+            return (
+              (new Date(a.date).getTime() - new Date(b.date).getTime()) *
+              multiplier
+            );
+          case "amount":
+            return (a.amount - b.amount) * multiplier;
+          case "category":
+            return (
+              (a.category || "").localeCompare(b.category || "") * multiplier
+            );
+          case "project": {
+            const aProject = getProjectName(a.projectId || "");
+            const bProject = getProjectName(b.projectId || "");
+            return aProject.localeCompare(bProject) * multiplier;
+          }
+          case "account": {
+            const aAccount = getAccountName(a.accountId || "");
+            const bAccount = getAccountName(b.accountId || "");
+            return aAccount.localeCompare(bAccount) * multiplier;
+          }
+          default:
+            return 0;
+        }
+      });
+    };
+
+    const applyLimit = (items: any[]): any[] => {
+      const limit = intent.aggregation?.count || intent.limit || 100;
+      return items.slice(0, limit);
+    };
+
+    // Apply all filters to expenses
+    let filteredExpenses = [...allExpenses];
+    filteredExpenses = applyTimeFilter(filteredExpenses);
+    filteredExpenses = applyCategoryFilter(filteredExpenses);
+    filteredExpenses = applyProjectFilter(filteredExpenses);
+    filteredExpenses = applyAccountFilter(filteredExpenses);
+    filteredExpenses = applyMerchantFilter(filteredExpenses);
+    filteredExpenses = applyAmountFilter(filteredExpenses);
+    filteredExpenses = applySort(filteredExpenses);
+    filteredExpenses = applyLimit(filteredExpenses);
+
+    // Apply all filters to incomes
+    let filteredIncomes = [...allIncomes];
+    filteredIncomes = applyTimeFilter(filteredIncomes);
+    filteredIncomes = applyProjectFilter(filteredIncomes);
+    filteredIncomes = applyAccountFilter(filteredIncomes);
+    filteredIncomes = applyAmountFilter(filteredIncomes);
+    filteredIncomes = applySort(filteredIncomes);
+    filteredIncomes = applyLimit(filteredIncomes);
+
+    // Apply receipt status filter
+    let filteredReceipts = [...allReceipts];
+    if (intent.receiptStatusFilter?.statuses.length) {
+      filteredReceipts = filteredReceipts.filter((r: any) =>
+        intent.receiptStatusFilter!.statuses.includes(r.status)
+      );
     }
 
-    // Build compact, token-efficient context string for AI
+    // Step 3: Build context string with filtered data
     let contextString = `Financial Data:\n`;
 
-    // Expenses - compact format
-    if (expenses.length > 0) {
-      contextString += `Expenses(${expenses.length}): `;
-      expenses.slice(0, 100).forEach((e: any, idx: number) => {
+    const limit = intent.aggregation?.count || intent.limit || 100;
+    const isExpensesLimited =
+      allExpenses.length > filteredExpenses.length &&
+      filteredExpenses.length === limit;
+    const isIncomesLimited =
+      allIncomes.length > filteredIncomes.length &&
+      filteredIncomes.length === limit;
+
+    // Expenses
+    if (filteredExpenses.length > 0) {
+      contextString += `Expenses(${filteredExpenses.length}${
+        isExpensesLimited ? ` of ${allExpenses.length} (filtered)` : ""
+      }): `;
+      filteredExpenses.forEach((e: any, idx: number) => {
         const project = e.projectId ? getProjectName(e.projectId) : "";
         const account = e.accountId ? getAccountName(e.accountId) : "";
         const merchant = e.ocrData?.merchant ? ` [${e.ocrData.merchant}]` : "";
@@ -129,31 +521,27 @@ export default defineEventHandler(async (event) => {
           project ? `|${project}` : ""
         }${account ? `|${account}` : ""}`;
       });
-      if (expenses.length > 100) {
-        contextString += `... (+${expenses.length - 100} more)`;
-      }
       contextString += "\n";
     }
 
-    // Incomes - compact format
-    if (incomes.length > 0) {
-      contextString += `Incomes(${incomes.length}): `;
-      incomes.slice(0, 100).forEach((i: any, idx: number) => {
+    // Incomes
+    if (filteredIncomes.length > 0) {
+      contextString += `Incomes(${filteredIncomes.length}${
+        isIncomesLimited ? ` of ${allIncomes.length} (filtered)` : ""
+      }): `;
+      filteredIncomes.forEach((i: any, idx: number) => {
         const project = i.projectId ? getProjectName(i.projectId) : "";
         contextString += `${idx > 0 ? "; " : ""}$${i.amount.toFixed(2)}|${
           i.date
         }|${i.description}${project ? `|${project}` : ""}`;
       });
-      if (incomes.length > 100) {
-        contextString += `... (+${incomes.length - 100} more)`;
-      }
       contextString += "\n";
     }
 
     // Projects - full details
-    if (projects.length > 0) {
-      contextString += `Projects(${projects.length}): `;
-      projects.forEach((p: any, idx: number) => {
+    if (allProjects.length > 0) {
+      contextString += `Projects(${allProjects.length}): `;
+      allProjects.forEach((p: any, idx: number) => {
         contextString += `${idx > 0 ? "; " : ""}${p.name}|${
           p.status
         }|Budget:$${p.budget.toFixed(2)}|Spent:$${p.spent.toFixed(
@@ -166,9 +554,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Accounts - full details
-    if (accounts.length > 0) {
-      contextString += `Accounts(${accounts.length}): `;
-      accounts.forEach((a: any, idx: number) => {
+    if (allAccounts.length > 0) {
+      contextString += `Accounts(${allAccounts.length}): `;
+      allAccounts.forEach((a: any, idx: number) => {
         contextString += `${idx > 0 ? "; " : ""}${a.name}|${a.type}${
           a.cardType ? `|${a.cardType}` : ""
         }${a.lastFourDigits ? `|****${a.lastFourDigits}` : ""}|${
@@ -179,20 +567,22 @@ export default defineEventHandler(async (event) => {
     }
 
     // Receipts - full details
-    if (receipts.length > 0) {
-      const pendingCount = receipts.filter(
+    if (filteredReceipts.length > 0 || allReceipts.length > 0) {
+      const receiptsToShow =
+        filteredReceipts.length > 0 ? filteredReceipts : allReceipts;
+      const pendingCount = receiptsToShow.filter(
         (r: any) => r.status === "uploaded" || r.status === "processing"
       ).length;
-      const processedCount = receipts.filter(
+      const processedCount = receiptsToShow.filter(
         (r: any) => r.status === "processed" || r.status === "approved"
       ).length;
-      const errorCount = receipts.filter(
+      const errorCount = receiptsToShow.filter(
         (r: any) => r.status === "error"
       ).length;
-      contextString += `Receipts: Total ${receipts.length} (Pending:${pendingCount}|Processed:${processedCount}|Errors:${errorCount})\n`;
+      contextString += `Receipts: Total ${receiptsToShow.length} (Pending:${pendingCount}|Processed:${processedCount}|Errors:${errorCount})\n`;
       if (pendingCount > 0) {
         contextString += `Pending: `;
-        receipts
+        receiptsToShow
           .filter(
             (r: any) => r.status === "uploaded" || r.status === "processing"
           )
@@ -206,23 +596,9 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Add merchant-specific results if found
-    if (merchantMatches.length > 0) {
-      const merchantTotal = calculateTotal(merchantMatches);
-      const lastMatch = merchantMatches.sort(
-        (a: any, b: any) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-      )[0];
-      contextString += `\nMerchant Query Results: ${
-        merchantMatches.length
-      } match(es), Total: $${merchantTotal.toFixed(
-        2
-      )}, Last: $${lastMatch.amount.toFixed(2)} on ${lastMatch.date}\n`;
-    }
-
-    // Summary stats
-    const totalExpenses = calculateTotal(expenses);
-    const totalIncomes = calculateTotal(incomes);
+    // Summary stats from filtered data
+    const totalExpenses = calculateTotal(filteredExpenses);
+    const totalIncomes = calculateTotal(filteredIncomes);
     const netIncome = totalIncomes - totalExpenses;
     contextString += `\nTotals: Expenses $${totalExpenses.toFixed(
       2
@@ -235,7 +611,8 @@ export default defineEventHandler(async (event) => {
 - Do NOT ask follow-up questions
 - Do NOT add closing phrases like "How can I help?" or "Let me know if..."
 - Keep responses brief (2-4 sentences max unless detailed analysis needed)
-- If data unavailable, say so briefly`;
+- If data unavailable, say so briefly
+- If filtered data is shown, mention the filters applied when relevant`;
 
     const userPrompt = `${contextString}\n\nQ: ${lastUserMessage.content}\n\nA:`;
 
