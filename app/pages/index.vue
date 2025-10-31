@@ -9,23 +9,47 @@
             <p class="text-purple-200">Track your expenses</p>
           </div>
 
-          <!-- Message button with glassmorphism -->
-          <UButton
-            to="/chat"
-            variant="ghost"
-            icon="i-lucide-message-square"
-            class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl hover:bg-white/30 transition-all text-white flex items-center justify-center"
-            size="lg"
-          />
+          <div class="flex items-center gap-2">
+            <!-- Settings/Avatar button -->
+            <UButton
+              to="/settings"
+              variant="ghost"
+              icon="i-lucide-user-circle"
+              class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl hover:bg-white/30 transition-all text-white flex items-center justify-center"
+              size="lg"
+            />
+            <!-- Message button with glassmorphism -->
+            <UButton
+              to="/chat"
+              variant="ghost"
+              icon="i-lucide-message-square"
+              class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl hover:bg-white/30 transition-all text-white flex items-center justify-center"
+              size="lg"
+            />
+          </div>
         </div>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-2 gap-4">
-          <!-- This Month Card -->
+          <!-- Recent Expenses Card -->
           <UCard class="glass rounded-2xl p-3">
-            <p class="text-purple-200 text-sm mb-1">This Month</p>
-            <p class="text-2xl font-bold text-white mb-1">
-              {{ formatCurrency(thisMonthExpenses) }}
+            <p class="text-purple-200 text-sm mb-1">
+              {{ thisMonthExpenses > 0 ? "This Month" : recentExpenses.period }}
+            </p>
+            <p
+              v-if="expensesPending"
+              class="text-2xl font-bold text-white mb-1"
+            >
+              ...
+            </p>
+            <p v-else class="text-2xl font-bold text-white mb-1">
+              {{
+                formatCurrency(
+                  thisMonthExpenses > 0
+                    ? thisMonthExpenses
+                    : recentExpenses.total
+                )
+              }}
             </p>
             <div class="flex items-center gap-1">
               <UIcon
@@ -46,7 +70,8 @@
             </p>
             <div class="flex items-center gap-1">
               <p class="text-sm text-purple-200">
-                {{ pendingStats.count }} items
+                {{ pendingStats.count }}
+                {{ pendingStats.count === 1 ? "item" : "items" }}
               </p>
             </div>
           </UCard>
@@ -155,7 +180,7 @@
         </div>
 
         <!-- Pending Receipts -->
-        <div class="mt-8">
+        <div v-if="pendingList.length > 0" class="mt-8">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold text-white">Pending Receipts</h2>
           </div>
@@ -196,6 +221,7 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from "vue";
 import { useExpenses } from "~/composables/useExpenses";
 import { useIncomes } from "~/composables/useIncomes";
 import { useReceipts } from "~/composables/useReceipts";
@@ -206,8 +232,8 @@ definePageMeta({
   layout: "default",
 });
 
-const { expenses } = useExpenses();
-const { incomes } = useIncomes();
+const { expenses, pending: expensesPending } = useExpenses();
+const { incomes, pending: incomesPending } = useIncomes();
 const { receipts } = useReceipts();
 
 const formatCurrency = (amount: number) => `$${(amount || 0).toLocaleString()}`;
@@ -222,16 +248,99 @@ const normalizeDate = (d: unknown): Date => {
 const formatDate = (d: unknown) => normalizeDate(d).toLocaleDateString();
 const formatPercentage = (v: number) => `+${v}%`;
 
+// Calculate total expenses (fallback when no recent data)
+const totalExpenses = computed(() => {
+  if (!expenses.value || expenses.value.length === 0) {
+    return 0;
+  }
+  try {
+    return expenses.value.reduce((s, e) => {
+      const amount = Number(e?.amount || 0);
+      return s + (isNaN(amount) ? 0 : amount);
+    }, 0);
+  } catch (error) {
+    console.error("Error calculating totalExpenses:", error);
+    return 0;
+  }
+});
+
+// Calculate expenses for the last 30 days (more useful than just current month)
+const recentExpenses = computed(() => {
+  if (!expenses.value || expenses.value.length === 0) {
+    return { total: totalExpenses.value, period: "All Time" };
+  }
+
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
+
+  try {
+    const filtered = expenses.value.filter((e) => {
+      if (!e || !e.date) return false;
+      try {
+        const d = normalizeDate(e.date);
+        if (isNaN(d.getTime())) return false;
+        return d >= thirtyDaysAgo && d <= now;
+      } catch {
+        return false;
+      }
+    });
+
+    const total = filtered.reduce((s, e) => {
+      const amount = Number(e?.amount || 0);
+      return s + (isNaN(amount) ? 0 : amount);
+    }, 0);
+
+    // If no recent expenses, show all-time total
+    if (filtered.length === 0) {
+      return {
+        total: totalExpenses.value,
+        period: "All Time",
+        count: expenses.value.length,
+      };
+    }
+
+    return {
+      total,
+      period: "Last 30 Days",
+      count: filtered.length,
+    };
+  } catch (error) {
+    console.error("Error calculating recentExpenses:", error);
+    return { total: totalExpenses.value, period: "All Time" };
+  }
+});
+
+// Also calculate this month specifically
 const thisMonthExpenses = computed(() => {
+  if (!expenses.value || expenses.value.length === 0) {
+    return 0;
+  }
+
   const now = new Date();
   const m = now.getMonth();
   const y = now.getFullYear();
-  return (expenses.value || [])
-    .filter((e) => {
-      const d = normalizeDate(e.date as unknown);
-      return d.getMonth() === m && d.getFullYear() === y;
-    })
-    .reduce((s, e) => s + (e.amount || 0), 0);
+
+  try {
+    const filtered = expenses.value.filter((e) => {
+      if (!e || !e.date) return false;
+      try {
+        const d = normalizeDate(e.date);
+        if (isNaN(d.getTime())) return false;
+        return d.getMonth() === m && d.getFullYear() === y;
+      } catch {
+        return false;
+      }
+    });
+
+    return filtered.reduce((s, e) => {
+      const amount = Number(e?.amount || 0);
+      return s + (isNaN(amount) ? 0 : amount);
+    }, 0);
+  } catch (error) {
+    console.error("Error calculating thisMonthExpenses:", error);
+    return 0;
+  }
 });
 
 const expensesPercentageChange = computed(() => 0);
@@ -265,10 +374,27 @@ const pendingList = computed(() =>
     (r) => r.status === "uploaded" || r.status === "processing"
   )
 );
-const pendingStats = computed(() => ({
-  count: pendingList.value.length,
-  totalAmount: 0,
-}));
+const pendingStats = computed(() => {
+  const totalAmount = pendingList.value.reduce((sum, r) => {
+    // Try to get amount from ocrData.totalAmount or approvedItems
+    if (r.ocrData?.totalAmount) {
+      return sum + (Number(r.ocrData.totalAmount) || 0);
+    }
+    if (r.approvedItems && Array.isArray(r.approvedItems)) {
+      const itemsTotal = r.approvedItems.reduce(
+        (itemSum: number, item: any) =>
+          itemSum + Number(item.price || 0) * Number(item.quantity || 1),
+        0
+      );
+      return sum + itemsTotal;
+    }
+    return sum;
+  }, 0);
+  return {
+    count: pendingList.value.length,
+    totalAmount,
+  };
+});
 
 const router = useRouter();
 const goToTx = (tx: { id: string; type: "expense" | "income" }) => {

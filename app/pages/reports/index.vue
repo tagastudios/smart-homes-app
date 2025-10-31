@@ -197,7 +197,17 @@
             <template #header>
               <h3 class="text-white font-semibold">Income vs Expenses</h3>
             </template>
+            <div
+              v-if="
+                lineSeries[0].data.length === 0 &&
+                lineSeries[1].data.length === 0
+              "
+              class="flex items-center justify-center h-64 text-slate-400"
+            >
+              <p>No data available for the selected date range</p>
+            </div>
             <apexchart
+              v-else
               type="line"
               height="260"
               :options="lineOptions"
@@ -209,7 +219,16 @@
             <template #header>
               <h3 class="text-white font-semibold">Category Breakdown</h3>
             </template>
+            <div
+              v-if="
+                donutSeries.length === 0 || donutSeries.every((v) => v === 0)
+              "
+              class="flex items-center justify-center h-64 text-slate-400"
+            >
+              <p>No expenses in the selected date range</p>
+            </div>
             <apexchart
+              v-else
               type="donut"
               height="260"
               :options="donutOptions"
@@ -219,9 +238,19 @@
 
           <UCard class="bg-slate-900 border-slate-800 lg:col-span-2">
             <template #header>
-              <h3 class="text-white font-semibold">By Account / Project</h3>
+              <h3 class="text-white font-semibold">Top Expenses by Category</h3>
             </template>
+            <div
+              v-if="
+                barSeries[0].data.length === 0 ||
+                barSeries[0].data.every((v) => v === 0)
+              "
+              class="flex items-center justify-center h-64 text-slate-400"
+            >
+              <p>No expenses in the selected date range</p>
+            </div>
             <apexchart
+              v-else
               type="bar"
               height="300"
               :options="barOptions"
@@ -270,8 +299,9 @@ const { projects } = useProjects();
 const { accounts } = useAccounts();
 const { allAccountTypes } = useAccountTypes();
 
+// Default filter: show all data (from earliest expense to today)
 const filters = reactive({
-  fromStr: new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10),
+  fromStr: "2010-01-01", // Start from 2010 to capture all historical data
   toStr: new Date().toISOString().slice(0, 10),
   projectId: undefined,
   accountId: undefined,
@@ -307,28 +337,99 @@ const fromDate = computed(() => new Date(filters.fromStr));
 const toDate = computed(() => new Date(filters.toStr));
 
 const normalizeDate = (v) => {
-  return new Date(v && typeof v.toDate === "function" ? v.toDate() : v);
+  try {
+    if (!v) return new Date();
+    if (typeof v.toDate === "function") {
+      return v.toDate();
+    }
+    if (v instanceof Date) {
+      return v;
+    }
+    if (typeof v === "string" || typeof v === "number") {
+      return new Date(v);
+    }
+    // Handle Firestore Timestamp from Firebase MCP (has __type__ and value)
+    if (v && v.__type__ === "Timestamp" && v.value) {
+      return new Date(v.value);
+    }
+    return new Date(v);
+  } catch (error) {
+    console.error("Error normalizing date:", error, v);
+    return new Date();
+  }
 };
 
 const filteredExpenses = computed(() => {
-  return (expenses.value || []).filter((e) => {
-    const d = normalizeDate(e.date);
-    if (d < fromDate.value || d > toDate.value) return false;
-    if (filters.projectId && e.projectId !== filters.projectId) return false;
-    if (filters.accountId && e.accountId !== filters.accountId) return false;
-    if (filters.category && e.category !== filters.category) return false;
-    return true;
-  });
+  try {
+    return (expenses.value || []).filter((e) => {
+      if (!e || !e.date) return false;
+      try {
+        const d = normalizeDate(e.date);
+        if (isNaN(d.getTime())) return false;
+        // Compare dates only (ignore time)
+        const dDateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const fromDateOnly = new Date(
+          fromDate.value.getFullYear(),
+          fromDate.value.getMonth(),
+          fromDate.value.getDate()
+        );
+        const toDateOnly = new Date(
+          toDate.value.getFullYear(),
+          toDate.value.getMonth(),
+          toDate.value.getDate()
+        );
+        if (dDateOnly < fromDateOnly || dDateOnly > toDateOnly) return false;
+        if (filters.projectId && e.projectId !== filters.projectId)
+          return false;
+        if (filters.accountId && e.accountId !== filters.accountId)
+          return false;
+        if (filters.category && e.category !== filters.category) return false;
+        return true;
+      } catch (error) {
+        console.error("Error filtering expense:", error, e);
+        return false;
+      }
+    });
+  } catch (error) {
+    console.error("Error in filteredExpenses:", error);
+    return [];
+  }
 });
 
 const filteredIncomes = computed(() => {
-  return (incomes.value || []).filter((i) => {
-    const d = normalizeDate(i.date);
-    if (d < fromDate.value || d > toDate.value) return false;
-    if (filters.projectId && i.projectId !== filters.projectId) return false;
-    if (filters.accountId && i.accountId !== filters.accountId) return false;
-    return true;
-  });
+  try {
+    return (incomes.value || []).filter((i) => {
+      if (!i || !i.date) return false;
+      try {
+        const d = normalizeDate(i.date);
+        if (isNaN(d.getTime())) return false;
+        // Compare dates only (ignore time)
+        const dDateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const fromDateOnly = new Date(
+          fromDate.value.getFullYear(),
+          fromDate.value.getMonth(),
+          fromDate.value.getDate()
+        );
+        const toDateOnly = new Date(
+          toDate.value.getFullYear(),
+          toDate.value.getMonth(),
+          toDate.value.getDate()
+        );
+        if (dDateOnly < fromDateOnly || dDateOnly > toDateOnly) return false;
+        if (filters.projectId && i.projectId !== filters.projectId)
+          return false;
+        if (filters.accountId && i.accountId !== filters.accountId)
+          return false;
+        return true;
+      } catch (error) {
+        console.error("Error filtering income:", error, i);
+        return false;
+      }
+    });
+  } catch (error) {
+    console.error("Error in filteredIncomes:", error);
+    return [];
+  }
 });
 
 const kpis = computed(() => {
@@ -344,107 +445,283 @@ const kpis = computed(() => {
 });
 
 const groupByDate = (items, accessor) => {
-  const map = new Map();
-  items.forEach((x) => {
-    const d = normalizeDate(x.date);
-    const key = d.toISOString().slice(0, 10);
-    map.set(key, (map.get(key) || 0) + accessor(x));
-  });
-  return Array.from(map.entries()).sort(([a], [b]) => (a < b ? -1 : 1));
+  try {
+    const map = new Map();
+    items.forEach((x) => {
+      if (!x || !x.date) return;
+      try {
+        const d = normalizeDate(x.date);
+        if (isNaN(d.getTime())) return;
+        const key = d.toISOString().slice(0, 10);
+        const value = accessor(x) || 0;
+        map.set(key, (map.get(key) || 0) + Number(value));
+      } catch (error) {
+        console.error("Error in groupByDate:", error, x);
+      }
+    });
+    return Array.from(map.entries()).sort(([a], [b]) => (a < b ? -1 : 1));
+  } catch (error) {
+    console.error("Error in groupByDate:", error);
+    return [];
+  }
 };
 
-// Line chart data
+// Line chart data - Income vs Expenses over time
 const lineSeries = computed(() => {
-  const exp = groupByDate(filteredExpenses.value, (e) => e.amount || 0);
-  const inc = groupByDate(filteredIncomes.value, (i) => i.amount || 0);
-  const allLabels = Array.from(
-    new Set([...exp.map(([d]) => d), ...inc.map(([d]) => d)])
-  ).sort();
-  const expMap = new Map(exp);
-  const incMap = new Map(inc);
-  return [
-    { name: "Expenses", data: allLabels.map((d) => expMap.get(d) || 0) },
-    { name: "Income", data: allLabels.map((d) => incMap.get(d) || 0) },
-  ];
+  try {
+    const exp = groupByDate(filteredExpenses.value, (e) => e.amount || 0);
+    const inc = groupByDate(filteredIncomes.value, (i) => i.amount || 0);
+    const allLabels = Array.from(
+      new Set([...exp.map(([d]) => d), ...inc.map(([d]) => d)])
+    ).sort();
+    const expMap = new Map(exp);
+    const incMap = new Map(inc);
+    return [
+      { name: "Expenses", data: allLabels.map((d) => expMap.get(d) || 0) },
+      { name: "Income", data: allLabels.map((d) => incMap.get(d) || 0) },
+    ];
+  } catch (error) {
+    console.error("Error computing line series:", error);
+    return [
+      { name: "Expenses", data: [] },
+      { name: "Income", data: [] },
+    ];
+  }
 });
 
-const lineOptions = computed(() => ({
-  chart: { toolbar: { show: false }, foreColor: "#94a3b8" },
-  stroke: { curve: "smooth" },
-  colors: ["#f87171", "#60a5fa"],
-  xaxis: {
-    categories: Array.from(
-      new Set([
-        ...groupByDate(filteredExpenses.value, (e) => e.amount || 0).map(
-          ([d]) => d
-        ),
-        ...groupByDate(filteredIncomes.value, (i) => i.amount || 0).map(
-          ([d]) => d
-        ),
-      ])
-    ).sort(),
-  },
-  theme: { mode: "dark" },
-}));
+const lineOptions = computed(() => {
+  try {
+    const exp = groupByDate(filteredExpenses.value, (e) => e.amount || 0);
+    const inc = groupByDate(filteredIncomes.value, (i) => i.amount || 0);
+    const allLabels = Array.from(
+      new Set([...exp.map(([d]) => d), ...inc.map(([d]) => d)])
+    ).sort();
 
-// Donut (categories)
+    return {
+      chart: {
+        toolbar: { show: false },
+        foreColor: "#94a3b8",
+        type: "line",
+      },
+      stroke: { curve: "smooth", width: 2 },
+      colors: ["#f87171", "#60a5fa"],
+      xaxis: {
+        categories: allLabels,
+        labels: {
+          style: { colors: "#94a3b8" },
+          rotate: -45,
+          rotateAlways: false,
+        },
+      },
+      yaxis: {
+        labels: {
+          style: { colors: "#94a3b8" },
+          formatter: function (val) {
+            return `$${val.toFixed(0)}`;
+          },
+        },
+      },
+      legend: {
+        labels: { colors: "#94a3b8" },
+        position: "top",
+      },
+      tooltip: {
+        theme: "dark",
+        y: {
+          formatter: function (val) {
+            return `$${val.toFixed(2)}`;
+          },
+        },
+      },
+      theme: { mode: "dark" },
+    };
+  } catch (error) {
+    console.error("Error computing line options:", error);
+    return {
+      chart: { toolbar: { show: false }, foreColor: "#94a3b8" },
+      theme: { mode: "dark" },
+    };
+  }
+});
+
+// Donut (categories) - Category breakdown
 const donutAgg = computed(() => {
-  const map = new Map();
-  filteredExpenses.value.forEach((e) => {
-    map.set(e.category, (map.get(e.category) || 0) + (e.amount || 0));
-  });
-  return Array.from(map.entries());
+  try {
+    const map = new Map();
+    filteredExpenses.value.forEach((e) => {
+      const category = e.category || "Uncategorized";
+      map.set(category, (map.get(category) || 0) + (e.amount || 0));
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]); // Sort by amount descending
+  } catch (error) {
+    console.error("Error computing donut aggregation:", error);
+    return [];
+  }
 });
-const donutSeries = computed(() => donutAgg.value.map(([, v]) => v));
-const donutOptions = computed(() => ({
-  labels: donutAgg.value.map(([k]) => k || "Uncategorized"),
-  legend: { labels: { colors: "#94a3b8" } },
-  theme: { mode: "dark" },
-}));
+const donutSeries = computed(() => {
+  try {
+    return donutAgg.value.map(([, v]) => Number(v.toFixed(2)));
+  } catch {
+    return [];
+  }
+});
+const donutOptions = computed(() => {
+  try {
+    return {
+      labels: donutAgg.value.map(([k]) => k || "Uncategorized"),
+      legend: {
+        labels: { colors: "#94a3b8" },
+        position: "bottom",
+      },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: "60%",
+            labels: {
+              show: true,
+              total: {
+                show: true,
+                label: "Total",
+                formatter: () =>
+                  `$${filteredExpenses.value
+                    .reduce((sum, e) => sum + (e.amount || 0), 0)
+                    .toFixed(2)}`,
+                color: "#94a3b8",
+              },
+            },
+          },
+        },
+      },
+      tooltip: {
+        theme: "dark",
+        y: {
+          formatter: function (val) {
+            return `$${val.toFixed(2)}`;
+          },
+        },
+      },
+      theme: { mode: "dark" },
+    };
+  } catch (error) {
+    console.error("Error computing donut options:", error);
+    return {
+      legend: { labels: { colors: "#94a3b8" } },
+      theme: { mode: "dark" },
+    };
+  }
+});
 
-// Bar (accounts/projects)
+// Bar (top expenses by category or account/project)
 const barAgg = computed(() => {
-  const byAccount = new Map();
-  filteredExpenses.value.forEach((e) => {
-    byAccount.set(
-      e.accountId || "n/a",
-      (byAccount.get(e.accountId || "n/a") || 0) + (e.amount || 0)
-    );
-  });
-  const byProject = new Map();
-  filteredExpenses.value.forEach((e) => {
-    if (e.projectId)
-      byProject.set(
-        e.projectId,
-        (byProject.get(e.projectId) || 0) + (e.amount || 0)
+  try {
+    // Group by category for better insights
+    const byCategory = new Map();
+    filteredExpenses.value.forEach((e) => {
+      const category = e.category || "Uncategorized";
+      byCategory.set(
+        category,
+        (byCategory.get(category) || 0) + (e.amount || 0)
       );
-  });
-  return {
-    byAccount: Array.from(byAccount.entries()),
-    byProject: Array.from(byProject.entries()),
-  };
+    });
+
+    // Also group by account
+    const byAccount = new Map();
+    filteredExpenses.value.forEach((e) => {
+      if (e.accountId) {
+        const accountName =
+          accounts.value?.find((a) => a.id === e.accountId)?.name ||
+          "Unknown Account";
+        byAccount.set(
+          accountName,
+          (byAccount.get(accountName) || 0) + (e.amount || 0)
+        );
+      }
+    });
+
+    // Sort and limit to top 10
+    const topCategories = Array.from(byCategory.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    const topAccounts = Array.from(byAccount.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    return {
+      byCategory: topCategories,
+      byAccount: topAccounts,
+    };
+  } catch (error) {
+    console.error("Error computing bar aggregation:", error);
+    return { byCategory: [], byAccount: [] };
+  }
 });
 
-const barSeries = computed(() => [
-  { name: "By Account", data: barAgg.value.byAccount.map(([, v]) => v) },
-  { name: "By Project", data: barAgg.value.byProject.map(([, v]) => v) },
-]);
-const barOptions = computed(() => ({
-  xaxis: {
-    categories: [
-      ...barAgg.value.byAccount.map(
-        ([id]) => accounts.value?.find((a) => a.id === id)?.name || "n/a"
-      ),
-      ...barAgg.value.byProject.map(
-        ([id]) => projects.value?.find((p) => p.id === id)?.name || "n/a"
-      ),
-    ],
-    labels: { style: { colors: "#94a3b8" } },
-  },
-  colors: ["#8b5cf6", "#60a5fa"],
-  theme: { mode: "dark" },
-  legend: { labels: { colors: "#94a3b8" } },
-}));
+const barSeries = computed(() => {
+  try {
+    return [
+      {
+        name: "Expenses by Category",
+        data: barAgg.value.byCategory.map(([, v]) => Number(v.toFixed(2))),
+      },
+    ];
+  } catch {
+    return [{ name: "Expenses", data: [] }];
+  }
+});
+
+const barOptions = computed(() => {
+  try {
+    return {
+      chart: {
+        toolbar: { show: false },
+        foreColor: "#94a3b8",
+      },
+      xaxis: {
+        categories: barAgg.value.byCategory.map(([k]) => k || "Uncategorized"),
+        labels: {
+          style: { colors: "#94a3b8" },
+          rotate: -45,
+          rotateAlways: false,
+        },
+      },
+      yaxis: {
+        labels: {
+          style: { colors: "#94a3b8" },
+          formatter: function (val) {
+            return `$${val.toFixed(0)}`;
+          },
+        },
+      },
+      colors: ["#8b5cf6"],
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          borderRadius: 4,
+          columnWidth: "70%",
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      tooltip: {
+        theme: "dark",
+        y: {
+          formatter: function (val) {
+            return `$${val.toFixed(2)}`;
+          },
+        },
+      },
+      theme: { mode: "dark" },
+    };
+  } catch (error) {
+    console.error("Error computing bar options:", error);
+    return {
+      chart: { toolbar: { show: false }, foreColor: "#94a3b8" },
+      theme: { mode: "dark" },
+    };
+  }
+});
 
 const setPreset = (preset) => {
   const now = new Date();
