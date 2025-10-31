@@ -229,7 +229,7 @@
         </UCard>
 
         <!-- Appearance Section -->
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-slate-900 border-slate-800 overflow-visible">
           <template #header>
             <h2 class="text-lg font-semibold text-white">Appearance</h2>
           </template>
@@ -245,7 +245,11 @@
               <USelect
                 v-model="selectedTheme"
                 :options="themeOptions"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
+                :ui="{
+                  base: 'bg-slate-800 border-slate-700 text-white',
+                  content: 'z-50',
+                }"
+                portal
                 @update:model-value="handleThemeChange"
               />
             </div>
@@ -542,7 +546,7 @@ const themeOptions = [
   { label: "Light", value: "light" },
 ];
 
-const handleThemeChange = async (value: string | undefined | null) => {
+const handleThemeChange = async (value: unknown) => {
   if (
     !value ||
     typeof value !== "string" ||
