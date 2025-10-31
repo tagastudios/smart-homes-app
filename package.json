@@ -29,6 +29,7 @@
     "openai": "^6.7.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.3",
+    "vite-ssg": "^28.2.2",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
     "vue3-apexcharts": "^1.10.0",

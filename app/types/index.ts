@@ -342,3 +342,27 @@ export const CARD_BRANDS = {
     label: "Discover",
   },
 };
+
+// User Preferences interface
+export interface IUserPreferences {
+  currency: string;
+  dateFormat: string;
+  theme: "dark" | "light";
+  budgetAlertEnabled: boolean;
+  budgetAlertThreshold: number;
+  userId: string;
+  updatedAt: Date | Timestamp;
+}
+
+// User Profile interface
+export interface IUserProfile {
+  firstName: string;
+  lastName: string;
+  companyName?: string;
+  address?: string;
+  phone?: string;
+  taxId?: string;
+  userId: string;
+  createdAt: Date | Timestamp;
+  updatedAt: Date | Timestamp;
+}

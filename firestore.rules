@@ -41,6 +41,16 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
+    // User Preferences Collection
+    match /userPreferences/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User Profiles Collection
+    match /userProfiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Fallback for other collections
     match /{document=**} {
       allow read, write: if request.time < timestamp.date(2025, 11, 24);

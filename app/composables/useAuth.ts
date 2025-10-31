@@ -7,6 +7,9 @@ import {
   signOut as firebaseSignOut,
   signInWithPopup,
   GoogleAuthProvider,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from "firebase/auth";
 import type { IUser } from "~/types";
 
@@ -97,6 +100,32 @@ export const useAppAuth = () => {
     }
   };
 
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    try {
+      if (!user.value || !user.value.email) {
+        return { error: "User not authenticated" };
+      }
+
+      // Re-authenticate user before changing password
+      const credential = EmailAuthProvider.credential(
+        user.value.email,
+        currentPassword
+      );
+      await reauthenticateWithCredential(user.value, credential);
+
+      // Update password
+      await updatePassword(user.value, newPassword);
+      return { error: null };
+    } catch (error: unknown) {
+      return {
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
+    }
+  };
+
   return {
     user: appUser,
     isAuthenticated,
@@ -105,5 +134,6 @@ export const useAppAuth = () => {
     signInWithGoogle,
     resetPassword,
     signOut,
+    changePassword,
   };
 };
