@@ -1,100 +1,128 @@
 <template>
-  <div
-    class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4"
-  >
-    <div class="max-w-md w-full space-y-8">
-      <div class="text-center">
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          Smart Homes
-        </h1>
-        <p class="text-gray-600 dark:text-gray-300">
-          Construction Business Expense Tracker
-        </p>
+  <ClientOnly>
+    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+      <!-- Gradient Header -->
+      <div
+        class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
+      >
+        <div class="text-center">
+          <h1 class="text-3xl font-bold text-white mb-1">Smart Homes</h1>
+          <p class="text-purple-200 text-sm">
+            Construction Business Expense Tracker
+          </p>
+        </div>
       </div>
 
-      <UCard>
-        <template #header>
-          <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
-            Sign In
-          </h2>
-        </template>
+      <!-- Content Container -->
+      <div class="container mx-auto px-6 py-8 max-w-md">
+        <UCard class="bg-slate-900 border-slate-800">
+          <template #header>
+            <h2 class="text-lg font-semibold text-white">Sign In</h2>
+          </template>
 
-        <UForm
-          :state="formState"
-          :schema="schema"
-          @submit="onSubmit"
-          class="space-y-4"
-        >
-          <UFormField label="Email" name="email">
-            <UInput
-              v-model="formState.email"
-              type="email"
-              placeholder="your@email.com"
-              required
-            />
-          </UFormField>
-
-          <UFormField label="Password" name="password">
-            <UInput
-              v-model="formState.password"
-              type="password"
-              placeholder="••••••••"
-              required
-            />
-          </UFormField>
-
-          <div v-if="error" class="text-red-600 text-sm">
-            {{ error }}
-          </div>
-
-          <UButton type="submit" block :loading="loading"> Sign In </UButton>
-
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div
-                class="w-full border-t border-gray-300 dark:border-gray-600"
-              />
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white dark:bg-gray-800 text-gray-500"
-                >Or continue with</span
-              >
-            </div>
-          </div>
-
-          <UButton
-            @click="onGoogleSignIn"
-            :loading="googleLoading"
-            variant="outline"
-            block
-            icon="i-simple-icons-google"
+          <UForm
+            :state="formState"
+            :schema="schema"
+            @submit="onSubmit"
+            class="space-y-4"
           >
-            Sign in with Google
-          </UButton>
-        </UForm>
-
-        <template #footer>
-          <div class="text-center space-y-2">
-            <NuxtLink
-              to="/auth/forgot-password"
-              class="text-sm text-primary-600 hover:underline"
+            <UFormField
+              label="Email"
+              name="email"
+              :ui="{ label: 'text-white mb-2' }"
             >
-              Forgot password?
-            </NuxtLink>
-            <div class="text-sm text-gray-600 dark:text-gray-300">
-              Don't have an account?
-              <NuxtLink
-                to="/auth/signup"
-                class="text-primary-600 hover:underline font-medium"
-              >
-                Sign up
-              </NuxtLink>
+              <UInput
+                v-model="formState.email"
+                type="email"
+                placeholder="your@email.com"
+                required
+                class="w-full"
+                :ui="{
+                  base: 'bg-slate-800 border-slate-700 text-white w-full',
+                }"
+              />
+            </UFormField>
+
+            <UFormField
+              label="Password"
+              name="password"
+              :ui="{ label: 'text-white mb-2' }"
+            >
+              <UInput
+                v-model="formState.password"
+                type="password"
+                placeholder="••••••••"
+                required
+                class="w-full"
+                :ui="{
+                  base: 'bg-slate-800 border-slate-700 text-white w-full',
+                }"
+              />
+            </UFormField>
+
+            <UAlert
+              v-if="error"
+              color="error"
+              variant="soft"
+              :title="error"
+              icon="i-lucide-alert-circle"
+            />
+
+            <UButton
+              type="submit"
+              block
+              :loading="loading"
+              class="bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+            >
+              Sign In
+            </UButton>
+
+            <div class="relative">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-700" />
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-slate-900 text-slate-400">
+                  Or continue with
+                </span>
+              </div>
             </div>
-          </div>
-        </template>
-      </UCard>
+
+            <UButton
+              @click="onGoogleSignIn"
+              :loading="googleLoading"
+              variant="outline"
+              block
+              icon="i-simple-icons-google"
+              class="border-slate-700 text-slate-300 hover:bg-slate-800"
+            >
+              Sign in with Google
+            </UButton>
+          </UForm>
+
+          <template #footer>
+            <div class="text-center space-y-2">
+              <NuxtLink
+                to="/auth/forgot-password"
+                class="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                Forgot password?
+              </NuxtLink>
+              <div class="text-sm text-slate-400">
+                Don't have an account?
+                <NuxtLink
+                  to="/auth/signup"
+                  class="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+                >
+                  Sign up
+                </NuxtLink>
+              </div>
+            </div>
+          </template>
+        </UCard>
+      </div>
     </div>
-  </div>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
