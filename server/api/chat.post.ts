@@ -350,9 +350,52 @@ Return only valid JSON, no additional text.`;
         return items.filter((item: any) => {
           try {
             if (!item || !item[field]) return false;
-            const itemDate = new Date(item[field]);
+            // Handle both Date objects and string dates
+            let itemDate: Date;
+            if (item[field] instanceof Date) {
+              itemDate = item[field];
+            } else if (typeof item[field] === "string") {
+              itemDate = new Date(item[field]);
+            } else if (
+              item[field]?.toDate &&
+              typeof item[field].toDate === "function"
+            ) {
+              // Firestore Timestamp
+              itemDate = item[field].toDate();
+            } else {
+              return false;
+            }
+
             if (isNaN(itemDate.getTime())) return false;
-            return itemDate >= startDate! && itemDate <= endDate!;
+
+            // Compare dates - dates come as YYYY-MM-DD strings from context
+            let itemDateStr: string;
+            if (typeof item[field] === "string") {
+              // Already in YYYY-MM-DD format
+              itemDateStr = item[field].substring(0, 10);
+            } else {
+              // Convert Date to YYYY-MM-DD
+              const year = itemDate.getFullYear();
+              const month = String(itemDate.getMonth() + 1).padStart(2, "0");
+              const day = String(itemDate.getDate()).padStart(2, "0");
+              itemDateStr = `${year}-${month}-${day}`;
+            }
+
+            // Format filter dates to YYYY-MM-DD
+            const startYear = startDate.getFullYear();
+            const startMonth = String(startDate.getMonth() + 1).padStart(
+              2,
+              "0"
+            );
+            const startDay = String(startDate.getDate()).padStart(2, "0");
+            const startDateStr = `${startYear}-${startMonth}-${startDay}`;
+
+            const endYear = endDate.getFullYear();
+            const endMonth = String(endDate.getMonth() + 1).padStart(2, "0");
+            const endDay = String(endDate.getDate()).padStart(2, "0");
+            const endDateStr = `${endYear}-${endMonth}-${endDay}`;
+
+            return itemDateStr >= startDateStr && itemDateStr <= endDateStr;
           } catch {
             return false;
           }
@@ -705,12 +748,77 @@ Return only valid JSON, no additional text.`;
         allIncomes.length > filteredIncomes.length &&
         filteredIncomes.length === limit;
 
-      // Expenses
-      if (filteredExpenses.length > 0) {
-        contextString += `Expenses(${filteredExpenses.length}${
-          isExpensesLimited ? ` of ${allExpenses.length} (filtered)` : ""
+      // Always show total counts first so AI knows what data is available
+      contextString += `Total Available: ${allExpenses.length} expenses, ${allIncomes.length} incomes\n`;
+      if (
+        filteredExpenses.length !== allExpenses.length ||
+        filteredIncomes.length !== allIncomes.length
+      ) {
+        contextString += `After Filters: ${filteredExpenses.length} expenses, ${filteredIncomes.length} incomes\n`;
+      }
+      contextString += `\n`;
+
+      // Expenses - Show filtered data, or if empty show sorted fallback
+      // Check if user is asking for "top N" - if so, sort by amount; otherwise sort by date
+      const isTopNRequest = /top\s+\d+|most\s+(expensive|costly)/i.test(
+        lastUserMessage.content
+      );
+
+      let sortedAllExpenses = [...allExpenses];
+      if (isTopNRequest) {
+        // Sort by amount descending for "top N" requests
+        sortedAllExpenses = sortedAllExpenses.sort((a: any, b: any) => {
+          try {
+            const amountA = Number(a?.amount || 0);
+            const amountB = Number(b?.amount || 0);
+            return amountB - amountA; // Highest first
+          } catch {
+            return 0;
+          }
+        });
+      } else {
+        // Sort by date (most recent first) for other requests
+        sortedAllExpenses = sortedAllExpenses.sort((a: any, b: any) => {
+          try {
+            const dateA =
+              typeof a?.date === "string"
+                ? new Date(a.date)
+                : a?.date?.toDate
+                ? a.date.toDate()
+                : new Date(0);
+            const dateB =
+              typeof b?.date === "string"
+                ? new Date(b.date)
+                : b?.date?.toDate
+                ? b.date.toDate()
+                : new Date(0);
+            return dateB.getTime() - dateA.getTime(); // Most recent first
+          } catch {
+            return 0;
+          }
+        });
+      }
+
+      const expensesToShow =
+        filteredExpenses.length > 0
+          ? filteredExpenses
+          : sortedAllExpenses.slice(0, Math.min(20, sortedAllExpenses.length)); // Fallback: show top 20 if filter returns empty
+
+      if (expensesToShow.length > 0) {
+        const isFiltered = filteredExpenses.length > 0;
+        const isFallback = !isFiltered && expensesToShow.length > 0;
+        contextString += `Expenses(${expensesToShow.length}${
+          isFiltered && isExpensesLimited
+            ? ` of ${allExpenses.length} (filtered)`
+            : ""
+        }${
+          isFallback
+            ? ` (showing ${
+                isTopNRequest ? "top by amount" : "most recent"
+              }, filter returned ${filteredExpenses.length} results)`
+            : ""
         }): `;
-        filteredExpenses.forEach((e: any, idx: number) => {
+        expensesToShow.forEach((e: any, idx: number) => {
           try {
             const amount = Number(e?.amount || 0);
             const amountStr = isNaN(amount) ? "0.00" : amount.toFixed(2);
@@ -731,12 +839,46 @@ Return only valid JSON, no additional text.`;
         contextString += "\n";
       }
 
-      // Incomes
-      if (filteredIncomes.length > 0) {
-        contextString += `Incomes(${filteredIncomes.length}${
-          isIncomesLimited ? ` of ${allIncomes.length} (filtered)` : ""
+      // Incomes - Show filtered data, or if empty show most recent as fallback
+      // Sort by date (most recent first) for fallback
+      const sortedAllIncomes = [...allIncomes].sort((a: any, b: any) => {
+        try {
+          const dateA =
+            typeof a?.date === "string"
+              ? new Date(a.date)
+              : a?.date?.toDate
+              ? a.date.toDate()
+              : new Date(0);
+          const dateB =
+            typeof b?.date === "string"
+              ? new Date(b.date)
+              : b?.date?.toDate
+              ? b.date.toDate()
+              : new Date(0);
+          return dateB.getTime() - dateA.getTime(); // Most recent first
+        } catch {
+          return 0;
+        }
+      });
+
+      const incomesToShow =
+        filteredIncomes.length > 0
+          ? filteredIncomes
+          : sortedAllIncomes.slice(0, Math.min(20, sortedAllIncomes.length)); // Fallback: show 20 most recent if filter returns empty
+
+      if (incomesToShow.length > 0) {
+        const isFiltered = filteredIncomes.length > 0;
+        const isFallback = !isFiltered && incomesToShow.length > 0;
+        contextString += `Incomes(${incomesToShow.length}${
+          isFiltered && isIncomesLimited
+            ? ` of ${allIncomes.length} (filtered)`
+            : ""
+        }${
+          isFallback
+            ? ` (showing most recent, filter returned ${filteredIncomes.length} results)`
+            : ""
         }): `;
-        filteredIncomes.forEach((i: any, idx: number) => {
+        incomesToShow.forEach((i: any, idx: number) => {
           try {
             const amount = Number(i?.amount || 0);
             const amountStr = isNaN(amount) ? "0.00" : amount.toFixed(2);
@@ -811,32 +953,114 @@ Return only valid JSON, no additional text.`;
         }
       }
 
-      // Summary stats from filtered data
-      const totalExpenses = calculateTotal(filteredExpenses);
-      const totalIncomes = calculateTotal(filteredIncomes);
-      const netIncome = totalIncomes - totalExpenses;
-      contextString += `\nTotals: Expenses $${totalExpenses.toFixed(
-        2
-      )} | Incomes $${totalIncomes.toFixed(2)} | Net $${netIncome.toFixed(
-        2
-      )}\n`;
+      // Summary stats - show both filtered and total if different
+      const filteredTotalExpenses = calculateTotal(filteredExpenses);
+      const filteredTotalIncomes = calculateTotal(filteredIncomes);
+      const totalAllExpenses = calculateTotal(allExpenses);
+      const totalAllIncomes = calculateTotal(allIncomes);
+
+      contextString += `\n`;
+      if (filteredExpenses.length > 0 || filteredIncomes.length > 0) {
+        contextString += `Filtered Totals: Expenses $${filteredTotalExpenses.toFixed(
+          2
+        )} | Incomes $${filteredTotalIncomes.toFixed(2)} | Net $${(
+          filteredTotalIncomes - filteredTotalExpenses
+        ).toFixed(2)}\n`;
+      }
+
+      if (
+        (filteredExpenses.length !== allExpenses.length ||
+          filteredIncomes.length !== allIncomes.length) &&
+        (allExpenses.length > 0 || allIncomes.length > 0)
+      ) {
+        contextString += `All-Time Totals: Expenses $${totalAllExpenses.toFixed(
+          2
+        )} | Incomes $${totalAllIncomes.toFixed(2)} | Net $${(
+          totalAllIncomes - totalAllExpenses
+        ).toFixed(2)}\n`;
+      } else if (
+        filteredExpenses.length === allExpenses.length &&
+        filteredIncomes.length === allIncomes.length &&
+        (allExpenses.length > 0 || allIncomes.length > 0)
+      ) {
+        contextString += `Totals: Expenses $${filteredTotalExpenses.toFixed(
+          2
+        )} | Incomes $${filteredTotalIncomes.toFixed(2)} | Net $${(
+          filteredTotalIncomes - filteredTotalExpenses
+        ).toFixed(2)}\n`;
+      }
     } catch (error) {
       console.error("Error building context string:", error);
       // Continue with minimal context
       contextString += "Error building context. Data may be incomplete.\n";
     }
 
-    // Build the AI prompt - concise and token-efficient
-    const systemPrompt = `You are a financial assistant for a construction business. Answer questions accurately and concisely using the provided data. Rules:
-- Use exact amounts/dates from data
+    // Build the AI prompt - concise and token-efficient with markdown support
+    const systemPrompt = `You are a financial assistant for a construction business. Answer questions accurately and concisely using the provided data. 
+
+FORMATTING RULES (MOBILE-FIRST):
+- Use Markdown formatting optimized for mobile/vertical display:
+  * Use ## for section headers
+  * Use **bold** for emphasis and important numbers
+  * Use - or * for lists (PREFERRED over tables)
+  * AVOID tables - use vertical lists instead for better mobile readability
+  * For expense/income lists, format as: **Amount** | Date | Category | Description (each on separate line or as list items)
+  * Use numbered lists for rankings (1., 2., 3.)
+  * Use bullet lists for collections
 - Be direct and factual
 - Do NOT ask follow-up questions
 - Do NOT add closing phrases like "How can I help?" or "Let me know if..."
 - Keep responses brief (2-4 sentences max unless detailed analysis needed)
 - If data unavailable, say so briefly
-- If filtered data is shown, mention the filters applied when relevant`;
+- If filtered data is shown, mention the filters applied when relevant
 
-    const userPrompt = `${contextString}\n\nQ: ${lastUserMessage.content}\n\nA:`;
+CRITICAL: NEVER use markdown tables. Always use vertical lists or inline text with separators for mobile-friendly display.
+
+FORMATTING SPACING:
+- Add blank lines between paragraphs for readability (use double line breaks)
+- Separate major sections with blank lines
+- Use proper spacing between list items and paragraphs
+- Format expense lists with clear separation between entries (blank line between each item)
+
+CHART GENERATION - CRITICAL RULES:
+If the user requests a chart (e.g., "show a chart", "pie chart", "bar chart", "visualize"), you MUST include chart data in your response using this JSON format at the end:
+
+\`\`\`json
+{
+  "charts": [
+    {
+      "type": "bar" or "pie",
+      "title": "Chart Title",
+      "data": {
+        "labels": ["Label1", "Label2", ...],
+        "values": [value1, value2, ...]
+      },
+      "colors": ["#color1", "#color2", ...] // Optional
+    }
+  ]
+}
+\`\`\`
+
+CHART GENERATION REQUIREMENTS:
+1. ALWAYS generate charts when explicitly requested - NEVER skip charts even if filtered data is empty
+2. If context shows "showing most recent" for expenses, USE THAT DATA for the chart - it is valid data provided as fallback
+3. If filtered data is empty but expenses are shown with "(showing most recent)", generate chart with "Top N Most Recent" or "All-Time Top N" in title
+4. Chart data MUST be populated from the actual expense data shown in the context, whether filtered or fallback
+5. For "top 5" requests, use the first 5 items from the provided data and sort by amount (descending)
+6. NEVER return empty chart data - always populate with actual values from context
+
+DATA HANDLING:
+- If filtered data shows 0 results but "Total Available" shows expenses exist:
+  1. Inform user that no expenses match the filter criteria
+  2. Explain that expenses exist outside the requested time range
+  3. ALWAYS generate the requested chart using the fallback data shown in context (marked as "showing most recent")
+  4. Adjust chart title to indicate "All-Time" or "Most Recent" instead of the filtered time period
+
+- Always use the actual data values provided in the context - trust the data shown even if marked as fallback
+- For bar charts: Sort by amount descending and show top N items
+- For pie charts: Group by category and sum amounts`;
+
+    const userPrompt = `${contextString}\n\nQ: ${lastUserMessage.content}\n\nA: (Use Markdown formatting. If user requests a chart, you MUST include chart JSON with data from the expenses shown above - use filtered data if available, otherwise use the fallback "most recent" data shown):`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -851,14 +1075,62 @@ Return only valid JSON, no additional text.`;
         },
       ],
       temperature: 0.2,
-      max_tokens: 300,
+      max_tokens: 800, // Increased for markdown and chart data
     });
 
-    const reply =
+    let reply =
       completion.choices[0]?.message?.content ||
       "Sorry, I couldn't generate a response. Please try again.";
 
-    return { reply };
+    // Extract chart data from response if present
+    const charts: Array<{
+      type: "bar" | "pie";
+      title: string;
+      data: { labels: string[]; values: number[] };
+      colors?: string[];
+    }> = [];
+
+    try {
+      // Look for JSON code blocks with chart data
+      const jsonMatch = reply.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        const chartData = JSON.parse(jsonMatch[1]);
+        if (chartData.charts && Array.isArray(chartData.charts)) {
+          charts.push(...chartData.charts);
+          // Remove the JSON block from the reply
+          reply = reply.replace(/```json\s*[\s\S]*?\s*```/g, "").trim();
+        }
+      }
+
+      // Validate chart data structure
+      const validatedCharts = charts
+        .filter((chart) => {
+          return (
+            (chart.type === "bar" || chart.type === "pie") &&
+            chart.title &&
+            chart.data &&
+            Array.isArray(chart.data.labels) &&
+            Array.isArray(chart.data.values) &&
+            chart.data.labels.length === chart.data.values.length &&
+            chart.data.labels.length > 0 &&
+            chart.data.labels.length <= 20 // Limit for performance
+          );
+        })
+        .map((chart) => ({
+          type: chart.type,
+          title: chart.title,
+          data: {
+            labels: chart.data.labels.slice(0, 20),
+            values: chart.data.values.slice(0, 20),
+          },
+          colors: chart.colors?.slice(0, 20),
+        }));
+      return { reply, charts: validatedCharts };
+    } catch (error) {
+      console.error("Error parsing chart data:", error);
+      // Return reply without charts if parsing fails
+      return { reply };
+    }
   } catch (error) {
     console.error("Chat API error:", error);
     // Don't expose error details to user - return friendly message
