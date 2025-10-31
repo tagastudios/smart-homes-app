@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -20,23 +20,21 @@
             name="i-lucide-loader-2"
             class="animate-spin mx-auto h-12 w-12 text-purple-400 mb-4"
           />
-          <p class="text-slate-400">Loading accounts...</p>
+          <p class="text-muted">Loading accounts...</p>
         </div>
 
         <!-- Empty State -->
         <UCard
           v-else-if="accounts && accounts.length === 0"
-          class="bg-slate-900 border-slate-800"
+          class="bg-elevated border border-default"
         >
           <div class="text-center py-12">
             <UIcon
               name="i-lucide-credit-card"
-              class="mx-auto h-16 w-16 text-slate-400 mb-4"
+              class="mx-auto h-16 w-16 text-muted mb-4"
             />
-            <h3 class="text-lg font-semibold text-white mb-2">
-              No accounts yet
-            </h3>
-            <p class="text-slate-400 mb-6">
+            <h3 class="text-lg font-semibold mb-2">No accounts yet</h3>
+            <p class="text-muted mb-6">
               Add your first account to get started.
             </p>
             <UButton
@@ -68,7 +66,7 @@
             <UCard
               v-for="account in accounts"
               :key="account.id"
-              class="bg-slate-900 border-slate-800 rounded-xl hover:border-slate-600 transition-colors"
+              class="bg-elevated border border-default rounded-xl transition-colors hover:border-default/70"
             >
               <div class="p-5 space-y-4">
                 <!-- Header -->
@@ -86,10 +84,10 @@
                         />
                       </div>
                       <div>
-                        <h3 class="text-lg font-semibold text-white">
+                        <h3 class="text-lg font-semibold">
                           {{ account.name }}
                         </h3>
-                        <p class="text-sm text-slate-400 capitalize">
+                        <p class="text-sm text-muted capitalize">
                           {{ account.type }}
                           <span v-if="account.cardType" class="ml-1">
                             • {{ formatCardType(account.cardType) }}
@@ -99,7 +97,7 @@
                     </div>
                     <p
                       v-if="account.lastFourDigits"
-                      class="text-sm text-slate-500 mt-1"
+                      class="text-sm text-muted mt-1"
                     >
                       •••• {{ account.lastFourDigits }}
                     </p>
@@ -113,13 +111,13 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="flex gap-2 pt-3 border-t border-slate-700">
+                <div class="flex gap-2 pt-3 border-t border-default">
                   <UButton
                     size="sm"
                     variant="ghost"
                     icon="i-lucide-edit"
                     @click="openModal(account)"
-                    class="text-slate-300 hover:text-white hover:bg-slate-800"
+                    class="text-muted hover:text-default hover:bg-accented"
                   >
                     Edit
                   </UButton>
@@ -129,7 +127,7 @@
                     icon="i-lucide-power"
                     @click="toggleStatus(account)"
                     :loading="loading"
-                    class="text-slate-300 hover:text-white hover:bg-slate-800"
+                    class="text-muted hover:text-default hover:bg-accented"
                   >
                     {{ account.isActive ? "Deactivate" : "Activate" }}
                   </UButton>
@@ -152,17 +150,9 @@
       <!-- Add/Edit Modal -->
       <UModal v-model:open="showModal">
         <template #content>
-          <UCard
-            class="bg-slate-900 border-slate-800"
-            :ui="{
-              root: 'bg-slate-900 border-slate-800',
-              header: 'bg-slate-900 border-slate-800',
-              body: 'bg-slate-900',
-              footer: 'bg-slate-900 border-slate-800',
-            }"
-          >
+          <UCard class="bg-elevated border border-default">
             <template #header>
-              <h3 class="text-xl font-semibold text-white">
+              <h3 class="text-xl font-semibold">
                 {{ editingAccount ? "Edit Account" : "Add New Account" }}
               </h3>
             </template>
@@ -172,15 +162,12 @@
                 label="Account Name"
                 name="name"
                 required
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                :ui="{ wrapper: 'w-full' }"
               >
                 <UInput
                   v-model="form.name"
                   placeholder="e.g., Chase Business Card"
                   class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500 w-full',
-                  }"
                 />
               </UFormField>
 
@@ -188,7 +175,7 @@
                 label="Account Type"
                 name="type"
                 required
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                :ui="{ wrapper: 'w-full' }"
               >
                 <div class="w-full">
                   <UI-TypeSelectMenu
@@ -208,9 +195,8 @@
                 name="cardType"
                 hint="Optional: Card brand (Visa, Mastercard, etc.)"
                 :ui="{
-                  label: 'text-white mb-2',
-                  hint: 'text-slate-400 text-xs mt-1',
                   wrapper: 'w-full',
+                  hint: 'text-muted text-xs mt-1',
                 }"
               >
                 <div class="w-full">
@@ -230,9 +216,8 @@
                 name="lastFourDigits"
                 hint="Optional: Last 4 digits shown on receipts"
                 :ui="{
-                  label: 'text-white mb-2',
-                  hint: 'text-slate-400 text-xs mt-1',
                   wrapper: 'w-full',
+                  hint: 'text-muted text-xs mt-1',
                 }"
               >
                 <UInput
@@ -241,20 +226,17 @@
                   maxlength="4"
                   pattern="[0-9]*"
                   class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500 w-full',
-                  }"
                 />
               </UFormField>
 
               <UFormField
                 label="Status"
                 name="isActive"
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                :ui="{ wrapper: 'w-full' }"
               >
                 <div class="flex items-center gap-3">
                   <USwitch v-model="form.isActive" />
-                  <span class="text-sm text-slate-300">
+                  <span class="text-sm text-muted">
                     {{ form.isActive ? "Active" : "Inactive" }}
                   </span>
                 </div>
@@ -274,7 +256,7 @@
                   color="neutral"
                   variant="ghost"
                   @click="closeModal"
-                  class="text-slate-300 hover:text-white"
+                  class="text-muted hover:text-default"
                 >
                   Cancel
                 </UButton>
@@ -294,15 +276,7 @@
       <!-- Delete Confirmation Modal -->
       <UModal v-model:open="showDeleteModal">
         <template #content>
-          <UCard
-            class="bg-slate-900 border-slate-800"
-            :ui="{
-              root: 'bg-slate-900 border-slate-800',
-              header: 'bg-slate-900 border-slate-800',
-              body: 'bg-slate-900',
-              footer: 'bg-slate-900 border-slate-800',
-            }"
-          >
+          <UCard class="bg-elevated border border-default">
             <template #header>
               <div class="flex items-center gap-3">
                 <UIcon
@@ -315,11 +289,10 @@
               </div>
             </template>
 
-            <p class="text-slate-300">
+            <p class="text-muted">
               Are you sure you want to delete the account
-              <span class="font-semibold text-white"
-                >"{{ accountToDelete?.name }}"</span
-              >? This action cannot be undone.
+              <span class="font-semibold">"{{ accountToDelete?.name }}"</span>?
+              This action cannot be undone.
             </p>
 
             <template #footer>
@@ -328,7 +301,7 @@
                   color="neutral"
                   variant="ghost"
                   @click="showDeleteModal = false"
-                  class="text-slate-300 hover:text-white"
+                  class="text-muted hover:text-default"
                 >
                   Cancel
                 </UButton>

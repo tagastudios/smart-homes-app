@@ -17,11 +17,11 @@ body {
 
 /* Glassmorphism utilities */
 .glass {
-  @apply bg-white/10 backdrop-blur-lg border border-white/20;
+  @apply backdrop-blur-lg border border-default bg-default/70 dark:bg-default/20;
 }
 
 .glass-dark {
-  @apply bg-slate-900/80 backdrop-blur-lg border-t border-slate-800;
+  @apply backdrop-blur-lg border-t border-default bg-default/80 dark:bg-default/40;
 }
 
 /* Custom gradient utilities */

@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -20,23 +20,21 @@
             name="i-lucide-loader-2"
             class="animate-spin mx-auto h-12 w-12 text-purple-400 mb-4"
           />
-          <p class="text-slate-400">Loading projects...</p>
+          <p class="text-muted">Loading projects...</p>
         </div>
 
         <!-- Empty State -->
         <UCard
           v-else-if="projects && projects.length === 0"
-          class="bg-slate-900 border-slate-800"
+          class="bg-elevated border border-default"
         >
           <div class="text-center py-12">
             <UIcon
               name="i-lucide-folder-open"
-              class="mx-auto h-16 w-16 text-slate-400 mb-4"
+              class="mx-auto h-16 w-16 text-muted mb-4"
             />
-            <h3 class="text-lg font-semibold text-white mb-2">
-              No projects yet
-            </h3>
-            <p class="text-slate-400 mb-6">
+            <h3 class="text-lg font-semibold mb-2">No projects yet</h3>
+            <p class="text-muted mb-6">
               Create your first project to start tracking expenses.
             </p>
             <UButton
@@ -68,18 +66,18 @@
             <UCard
               v-for="project in projects"
               :key="project.id"
-              class="bg-slate-900 border-slate-800 rounded-xl hover:border-slate-600 transition-colors"
+              class="bg-elevated border border-default rounded-xl transition-colors hover:border-default/70"
             >
               <div class="p-5 space-y-4">
                 <!-- Header -->
                 <div class="flex justify-between items-start">
                   <div class="flex-1">
-                    <h3 class="text-lg font-semibold text-white mb-1">
+                    <h3 class="text-lg font-semibold mb-1">
                       {{ project.name }}
                     </h3>
                     <p
                       v-if="project.description"
-                      class="text-sm text-slate-400 mt-1"
+                      class="text-sm text-muted mt-1"
                     >
                       {{ project.description }}
                     </p>
@@ -98,8 +96,8 @@
                 <!-- Budget Progress -->
                 <div>
                   <div class="flex justify-between text-sm mb-2">
-                    <span class="text-slate-400">Budget</span>
-                    <span class="font-semibold text-white">
+                    <span class="text-muted">Budget</span>
+                    <span class="font-semibold">
                       ${{ formatCurrency(project.spent) }} / ${{
                         formatCurrency(project.budget)
                       }}
@@ -116,7 +114,7 @@
                     }"
                   />
                   <div class="flex justify-between text-xs mt-2">
-                    <span class="text-slate-500">
+                    <span class="text-muted">
                       {{ getBudgetPercentage(project).toFixed(1) }}% used
                     </span>
                     <span
@@ -141,32 +139,32 @@
 
                 <!-- Dates -->
                 <div
-                  class="flex gap-4 text-sm text-slate-400 pt-3 border-t border-slate-700"
+                  class="flex gap-4 text-sm text-muted pt-3 border-t border-default"
                 >
                   <div class="flex items-center gap-2">
                     <UIcon name="i-lucide-calendar" class="w-4 h-4" />
                     <span>
-                      <span class="font-medium text-slate-300">Start:</span>
+                      <span class="font-medium text-muted">Start:</span>
                       {{ formatDate(project.startDate) }}
                     </span>
                   </div>
                   <div v-if="project.endDate" class="flex items-center gap-2">
                     <UIcon name="i-lucide-calendar-days" class="w-4 h-4" />
                     <span>
-                      <span class="font-medium text-slate-300">End:</span>
+                      <span class="font-medium text-muted">End:</span>
                       {{ formatDate(project.endDate) }}
                     </span>
                   </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex gap-2 pt-3 border-t border-slate-700">
+                <div class="flex gap-2 pt-3 border-t border-default">
                   <UButton
                     size="sm"
                     variant="ghost"
                     icon="i-lucide-edit"
                     @click="openModal(project)"
-                    class="text-slate-300 hover:text-white hover:bg-slate-800"
+                    class="text-muted hover:text-default hover:bg-accented"
                   >
                     Edit
                   </UButton>
@@ -189,17 +187,9 @@
       <!-- Add/Edit Modal -->
       <UModal v-model:open="showModal">
         <template #content>
-          <UCard
-            class="bg-slate-900 border-slate-800"
-            :ui="{
-              root: 'bg-slate-900 border-slate-800',
-              header: 'bg-slate-900 border-slate-800',
-              body: 'bg-slate-900',
-              footer: 'bg-slate-900 border-slate-800',
-            }"
-          >
+          <UCard class="bg-elevated border border-default">
             <template #header>
-              <h3 class="text-xl font-semibold text-white">
+              <h3 class="text-xl font-semibold">
                 {{ editingProject ? "Edit Project" : "New Project" }}
               </h3>
             </template>
@@ -209,30 +199,24 @@
                 label="Project Name"
                 name="name"
                 required
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                :ui="{ wrapper: 'w-full' }"
               >
                 <UInput
                   v-model="form.name"
                   placeholder="e.g., Downtown Office Building"
                   class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500 w-full',
-                  }"
                 />
               </UFormField>
 
               <UFormField
                 label="Description"
                 name="description"
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                :ui="{ wrapper: 'w-full' }"
               >
                 <UTextarea
                   v-model="form.description"
                   placeholder="Project description..."
                   class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500 w-full',
-                  }"
                 />
               </UFormField>
 
@@ -240,7 +224,7 @@
                 label="Budget"
                 name="budget"
                 required
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                :ui="{ wrapper: 'w-full' }"
               >
                 <UInput
                   v-model.number="form.budget"
@@ -250,9 +234,6 @@
                   prefix="$"
                   placeholder="0.00"
                   class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500 w-full',
-                  }"
                 />
               </UFormField>
 
@@ -261,31 +242,17 @@
                   label="Start Date"
                   name="startDate"
                   required
-                  :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                  :ui="{ wrapper: 'w-full' }"
                 >
-                  <UInput
-                    v-model="form.startDate"
-                    type="date"
-                    class="w-full"
-                    :ui="{
-                      base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500 w-full',
-                    }"
-                  />
+                  <UInput v-model="form.startDate" type="date" class="w-full" />
                 </UFormField>
 
                 <UFormField
                   label="End Date"
                   name="endDate"
-                  :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                  :ui="{ wrapper: 'w-full' }"
                 >
-                  <UInput
-                    v-model="form.endDate"
-                    type="date"
-                    class="w-full"
-                    :ui="{
-                      base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500 w-full',
-                    }"
-                  />
+                  <UInput v-model="form.endDate" type="date" class="w-full" />
                 </UFormField>
               </div>
 
@@ -293,7 +260,7 @@
                 label="Status"
                 name="status"
                 required
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+                :ui="{ wrapper: 'w-full' }"
               >
                 <div class="w-full">
                   <UI-TypeSelectMenu
@@ -321,7 +288,7 @@
                   color="neutral"
                   variant="ghost"
                   @click="closeModal"
-                  class="text-slate-300 hover:text-white"
+                  class="text-muted hover:text-default"
                 >
                   Cancel
                 </UButton>
@@ -341,15 +308,7 @@
       <!-- Delete Confirmation Modal -->
       <UModal v-model:open="showDeleteModal">
         <template #content>
-          <UCard
-            class="bg-slate-900 border-slate-800"
-            :ui="{
-              root: 'bg-slate-900 border-slate-800',
-              header: 'bg-slate-900 border-slate-800',
-              body: 'bg-slate-900',
-              footer: 'bg-slate-900 border-slate-800',
-            }"
-          >
+          <UCard class="bg-elevated border border-default">
             <template #header>
               <div class="flex items-center gap-3">
                 <UIcon
@@ -362,11 +321,10 @@
               </div>
             </template>
 
-            <p class="text-slate-300">
+            <p class="text-muted">
               Are you sure you want to delete the project
-              <span class="font-semibold text-white"
-                >"{{ projectToDelete?.name }}"</span
-              >? This action cannot be undone.
+              <span class="font-semibold">"{{ projectToDelete?.name }}"</span>?
+              This action cannot be undone.
             </p>
 
             <template #footer>
@@ -375,7 +333,7 @@
                   color="neutral"
                   variant="ghost"
                   @click="showDeleteModal = false"
-                  class="text-slate-300 hover:text-white"
+                  class="text-muted hover:text-default"
                 >
                   Cancel
                 </UButton>

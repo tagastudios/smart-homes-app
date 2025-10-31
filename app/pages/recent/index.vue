@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -26,9 +26,9 @@
         <!-- Loading state -->
         <div
           v-if="expensesPending || incomesPending"
-          class="flex items-center justify-center py-12"
+          class="flex items-center justify-center py-12 text-muted"
         >
-          <div class="text-slate-400">Loading transactions...</div>
+          Loading transactions...
         </div>
 
         <!-- Empty state -->
@@ -36,9 +36,9 @@
           v-else-if="allTransactions.length === 0"
           class="flex flex-col items-center justify-center py-12"
         >
-          <UIcon name="i-lucide-file-x" class="w-16 h-16 text-slate-600 mb-4" />
-          <p class="text-slate-400 text-lg">No transactions found</p>
-          <p class="text-slate-500 text-sm mt-2">
+          <UIcon name="i-lucide-file-x" class="w-16 h-16 text-muted mb-4" />
+          <p class="text-muted text-lg">No transactions found</p>
+          <p class="text-muted text-sm mt-2">
             Add expenses or incomes to see them here
           </p>
         </div>
@@ -48,13 +48,13 @@
           <UCard
             v-for="tx in visibleTransactions"
             :key="tx.id"
-            class="bg-slate-900 rounded-2xl p-3 border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors"
+            class="bg-elevated rounded-2xl p-3 border border-default cursor-pointer transition-colors hover:border-default/70"
             @click="goToTx(tx)"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div
-                  class="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-800"
+                  class="w-10 h-10 rounded-xl flex items-center justify-center bg-accented"
                 >
                   <UIcon
                     :name="
@@ -69,8 +69,8 @@
                   />
                 </div>
                 <div>
-                  <p class="text-white font-medium">{{ tx.description }}</p>
-                  <p class="text-slate-400 text-sm">
+                  <p class="font-medium">{{ tx.description }}</p>
+                  <p class="text-muted text-sm">
                     {{ formatDate(tx.date) }}
                   </p>
                 </div>
@@ -91,8 +91,11 @@
         </div>
 
         <!-- Loading more indicator -->
-        <div v-if="isLoadingMore" class="flex items-center justify-center py-6">
-          <div class="text-slate-400 text-sm">Loading more...</div>
+        <div
+          v-if="isLoadingMore"
+          class="flex items-center justify-center py-6 text-muted text-sm"
+        >
+          Loading more...
         </div>
 
         <!-- Infinite scroll sentinel -->

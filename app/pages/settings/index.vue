@@ -1,7 +1,7 @@
 <template>
   <ClientOnly>
     <div
-      class="min-h-screen bg-slate-950 mobile-padding-bottom overflow-visible"
+      class="min-h-screen bg-default text-default mobile-padding-bottom overflow-visible"
     >
       <!-- Gradient Header -->
       <div
@@ -24,32 +24,32 @@
 
       <div class="container mx-auto px-6 py-6 space-y-6 overflow-visible">
         <!-- Account Stats Section -->
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">Account Statistics</h2>
+            <h2 class="text-lg font-semibold">Account Statistics</h2>
           </template>
 
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div class="bg-slate-800/50 rounded-lg p-4">
-              <p class="text-slate-400 text-sm mb-1">Member Since</p>
-              <p class="text-white font-semibold">
+            <div class="bg-accented/50 rounded-lg p-4">
+              <p class="text-muted text-sm mb-1">Member Since</p>
+              <p class="font-semibold">
                 {{ formatDate(user?.createdAt) }}
               </p>
             </div>
-            <div class="bg-slate-800/50 rounded-lg p-4">
-              <p class="text-slate-400 text-sm mb-1">Total Expenses</p>
-              <p class="text-white font-semibold">
+            <div class="bg-accented/50 rounded-lg p-4">
+              <p class="text-muted text-sm mb-1">Total Expenses</p>
+              <p class="font-semibold">
                 {{ formatCurrency(totalExpenses) }}
               </p>
             </div>
-            <div class="bg-slate-800/50 rounded-lg p-4">
-              <p class="text-slate-400 text-sm mb-1">Total Income</p>
-              <p class="text-white font-semibold">
+            <div class="bg-accented/50 rounded-lg p-4">
+              <p class="text-muted text-sm mb-1">Total Income</p>
+              <p class="font-semibold">
                 {{ formatCurrency(totalIncome) }}
               </p>
             </div>
-            <div class="bg-slate-800/50 rounded-lg p-4">
-              <p class="text-slate-400 text-sm mb-1">Net Balance</p>
+            <div class="bg-accented/50 rounded-lg p-4">
+              <p class="text-muted text-sm mb-1">Net Balance</p>
               <p
                 class="font-semibold"
                 :class="netBalance >= 0 ? 'text-green-400' : 'text-red-400'"
@@ -57,85 +57,68 @@
                 {{ formatCurrency(netBalance) }}
               </p>
             </div>
-            <div class="bg-slate-800/50 rounded-lg p-4">
-              <p class="text-slate-400 text-sm mb-1">Total Projects</p>
-              <p class="text-white font-semibold">{{ projectsCount }}</p>
+            <div class="bg-accented/50 rounded-lg p-4">
+              <p class="text-muted text-sm mb-1">Total Projects</p>
+              <p class="font-semibold">{{ projectsCount }}</p>
             </div>
-            <div class="bg-slate-800/50 rounded-lg p-4">
-              <p class="text-slate-400 text-sm mb-1">Total Accounts</p>
-              <p class="text-white font-semibold">{{ accountsCount }}</p>
+            <div class="bg-accented/50 rounded-lg p-4">
+              <p class="text-muted text-sm mb-1">Total Accounts</p>
+              <p class="font-semibold">{{ accountsCount }}</p>
             </div>
           </div>
         </UCard>
 
         <!-- Profile Section -->
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">Profile</h2>
+            <h2 class="text-lg font-semibold">Profile</h2>
           </template>
 
           <div class="space-y-4">
-            <UFormField label="First Name" :ui="{ label: 'text-white mb-2' }">
+            <UFormField label="First Name">
               <UInput
                 v-model="profile.firstName"
                 placeholder="Enter your first name"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
             </UFormField>
 
-            <UFormField label="Last Name" :ui="{ label: 'text-white mb-2' }">
+            <UFormField label="Last Name">
               <UInput
                 v-model="profile.lastName"
                 placeholder="Enter your last name"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
             </UFormField>
 
-            <UFormField label="Email" :ui="{ label: 'text-white mb-2' }">
-              <UInput
-                :value="user?.email || ''"
-                disabled
-                :ui="{
-                  base: 'bg-slate-800/50 border-slate-700 text-slate-400',
-                }"
-              />
+            <UFormField label="Email">
+              <UInput :value="user?.email || ''" disabled />
               <template #description>
-                <span class="text-slate-400 text-sm"
-                  >Email cannot be changed</span
-                >
+                <span class="text-muted text-sm">Email cannot be changed</span>
               </template>
             </UFormField>
 
-            <UFormField label="Company Name" :ui="{ label: 'text-white mb-2' }">
+            <UFormField label="Company Name">
               <UInput
                 v-model="profile.companyName"
                 placeholder="Enter your company name"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
             </UFormField>
 
-            <UFormField label="Address" :ui="{ label: 'text-white mb-2' }">
+            <UFormField label="Address">
               <UInput
                 v-model="profile.address"
                 placeholder="Enter your address"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
             </UFormField>
 
-            <UFormField label="Phone" :ui="{ label: 'text-white mb-2' }">
+            <UFormField label="Phone">
               <UInput
                 v-model="profile.phone"
                 placeholder="Enter your phone number"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
             </UFormField>
 
-            <UFormField label="Tax ID" :ui="{ label: 'text-white mb-2' }">
-              <UInput
-                v-model="profile.taxId"
-                placeholder="Enter your tax ID"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
-              />
+            <UFormField label="Tax ID">
+              <UInput v-model="profile.taxId" placeholder="Enter your tax ID" />
             </UFormField>
 
             <div class="flex justify-end pt-2">
@@ -151,9 +134,9 @@
         </UCard>
 
         <!-- Security Section -->
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">Security</h2>
+            <h2 class="text-lg font-semibold">Security</h2>
           </template>
 
           <div class="space-y-4">
@@ -170,36 +153,32 @@
         </UCard>
 
         <!-- Financial Preferences Section -->
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">
-              Financial Preferences
-            </h2>
+            <h2 class="text-lg font-semibold">Financial Preferences</h2>
           </template>
 
           <div class="space-y-4">
-            <UFormField label="Currency" :ui="{ label: 'text-white mb-2' }">
+            <UFormField label="Currency">
               <USelect
                 v-model="preferences.currency"
                 :options="currencyOptions"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
                 @update:model-value="savePreferences"
               />
             </UFormField>
 
-            <UFormField label="Date Format" :ui="{ label: 'text-white mb-2' }">
+            <UFormField label="Date Format">
               <USelect
                 v-model="preferences.dateFormat"
                 :options="dateFormatOptions"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
                 @update:model-value="savePreferences"
               />
             </UFormField>
 
             <div class="flex items-center justify-between pt-2">
               <div>
-                <p class="text-white font-medium">Budget Alerts</p>
-                <p class="text-slate-400 text-sm">
+                <p class="font-medium">Budget Alerts</p>
+                <p class="text-muted text-sm">
                   Get notified when project budgets reach thresholds
                 </p>
               </div>
@@ -210,18 +189,14 @@
             </div>
 
             <div v-if="preferences.budgetAlertEnabled" class="pt-2">
-              <UFormField
-                label="Alert Threshold"
-                :ui="{ label: 'text-white mb-2' }"
-              >
+              <UFormField label="Alert Threshold">
                 <USelect
                   v-model="preferences.budgetAlertThreshold"
                   :options="thresholdOptions"
-                  :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
                   @update:model-value="savePreferences"
                 />
                 <template #description>
-                  <span class="text-slate-400 text-sm"
+                  <span class="text-muted text-sm"
                     >Alert when spending reaches this percentage</span
                   >
                 </template>
@@ -231,16 +206,16 @@
         </UCard>
 
         <!-- Appearance Section -->
-        <UCard class="bg-slate-900 border-slate-800 overflow-visible">
+        <UCard class="bg-elevated border border-default overflow-visible">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">Appearance</h2>
+            <h2 class="text-lg font-semibold">Appearance</h2>
           </template>
 
           <div class="space-y-4">
             <div class="space-y-3">
               <div>
-                <p class="text-white font-medium mb-1">Theme</p>
-                <p class="text-slate-400 text-sm">
+                <p class="font-medium mb-1">Theme</p>
+                <p class="text-muted text-sm">
                   Choose between dark and light mode
                 </p>
               </div>
@@ -250,12 +225,6 @@
                 orientation="horizontal"
                 variant="card"
                 color="primary"
-                :ui="{
-                  item: 'border-slate-700 bg-slate-800',
-                  base: 'border-slate-600',
-                  label: 'text-white',
-                  indicator: 'bg-gradient-to-r from-purple-600 to-blue-600',
-                }"
                 @update:model-value="handleThemeChange"
               />
             </div>
@@ -263,47 +232,23 @@
         </UCard>
 
         <!-- Data Management Section -->
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">Data Management</h2>
+            <h2 class="text-lg font-semibold">Data Management</h2>
           </template>
 
           <div class="space-y-4">
-            <UFormField label="Export Type" :ui="{ label: 'text-white mb-2' }">
-              <USelect
-                v-model="exportType"
-                :options="exportTypeOptions"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
-              />
+            <UFormField label="Export Type">
+              <USelect v-model="exportType" :options="exportTypeOptions" />
             </UFormField>
 
             <div class="grid grid-cols-2 gap-4">
-              <UFormField
-                label="Start Date"
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-              >
-                <UInput
-                  v-model="exportDateStart"
-                  type="date"
-                  class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white',
-                  }"
-                />
+              <UFormField label="Start Date" :ui="{ wrapper: 'w-full' }">
+                <UInput v-model="exportDateStart" type="date" class="w-full" />
               </UFormField>
 
-              <UFormField
-                label="End Date"
-                :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-              >
-                <UInput
-                  v-model="exportDateEnd"
-                  type="date"
-                  class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white',
-                  }"
-                />
+              <UFormField label="End Date" :ui="{ wrapper: 'w-full' }">
+                <UInput v-model="exportDateEnd" type="date" class="w-full" />
               </UFormField>
             </div>
 
@@ -321,9 +266,9 @@
         </UCard>
 
         <!-- Account Section -->
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">Account</h2>
+            <h2 class="text-lg font-semibold">Account</h2>
           </template>
 
           <div class="space-y-4">
@@ -363,39 +308,30 @@
       <UModal v-model:open="showPasswordModal" title="Change Password">
         <template #body>
           <div class="space-y-4">
-            <UFormField
-              label="Current Password"
-              :ui="{ label: 'text-white mb-2' }"
-            >
+            <UFormField label="Current Password">
               <UInput
                 v-model="passwordForm.currentPassword"
                 type="password"
                 placeholder="Enter current password"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
             </UFormField>
 
-            <UFormField label="New Password" :ui="{ label: 'text-white mb-2' }">
+            <UFormField label="New Password">
               <UInput
                 v-model="passwordForm.newPassword"
                 type="password"
                 placeholder="Enter new password"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
               <template #description>
-                <span class="text-slate-400 text-sm">Minimum 6 characters</span>
+                <span class="text-muted text-sm">Minimum 6 characters</span>
               </template>
             </UFormField>
 
-            <UFormField
-              label="Confirm Password"
-              :ui="{ label: 'text-white mb-2' }"
-            >
+            <UFormField label="Confirm Password">
               <UInput
                 v-model="passwordForm.confirmPassword"
                 type="password"
                 placeholder="Confirm new password"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
             </UFormField>
 
@@ -413,7 +349,7 @@
             <UButton
               color="neutral"
               variant="ghost"
-              class="text-slate-300 hover:text-white"
+              class="text-muted hover:text-default"
               @click="showPasswordModal = false"
             >
               Cancel
@@ -446,17 +382,13 @@
               icon="i-lucide-alert-triangle"
             />
 
-            <UFormField
-              :label="eraseConfirmationLabel"
-              :ui="{ label: 'text-white mb-2' }"
-            >
+            <UFormField :label="eraseConfirmationLabel">
               <UInput
                 v-model="eraseConfirmationInput"
                 :placeholder="eraseConfirmationText"
-                :ui="{ base: 'bg-slate-800 border-slate-700 text-white' }"
               />
               <template #description>
-                <span class="text-slate-400 text-sm"
+                <span class="text-muted text-sm"
                   >This is required to prevent accidental deletion</span
                 >
               </template>
@@ -469,7 +401,7 @@
             <UButton
               color="neutral"
               variant="ghost"
-              class="text-slate-300 hover:text-white"
+              class="text-muted hover:text-default"
               @click="showEraseModal = false"
             >
               Cancel

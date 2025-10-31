@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -21,19 +21,16 @@
       </div>
 
       <div class="container mx-auto px-6 py-6">
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-white">Expense Details</h2>
+              <h2 class="text-lg font-semibold">Expense Details</h2>
             </div>
           </template>
 
           <div class="space-y-5">
             <!-- Amount -->
-            <UFormField
-              label="Amount"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="Amount" :ui="{ wrapper: 'w-full' }">
               <div class="w-full">
                 <UInput
                   v-model.number="form.amount"
@@ -47,10 +44,7 @@
             </UFormField>
 
             <!-- Category -->
-            <UFormField
-              label="Category"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="Category" :ui="{ wrapper: 'w-full' }">
               <USelectMenu
                 v-model="form.category"
                 :items="categoryOptions"
@@ -71,10 +65,7 @@
             </UFormField>
 
             <!-- Account / Payment Method -->
-            <UFormField
-              label="Payment Method"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="Payment Method" :ui="{ wrapper: 'w-full' }">
               <USelectMenu
                 v-model="form.accountId"
                 :items="accountOptions"
@@ -106,10 +97,7 @@
             </UFormField>
 
             <!-- Project (optional) -->
-            <UFormField
-              label="Project (optional)"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="Project (optional)" :ui="{ wrapper: 'w-full' }">
               <USelectMenu
                 v-model="form.projectId"
                 :items="projectOptions"
@@ -141,10 +129,7 @@
             </UFormField>
 
             <!-- Description -->
-            <UFormField
-              label="Description"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="Description" :ui="{ wrapper: 'w-full' }">
               <UTextarea
                 v-model="form.description"
                 placeholder="What was this expense for?"
@@ -153,10 +138,7 @@
             </UFormField>
 
             <!-- Date -->
-            <UFormField
-              label="Date"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="Date" :ui="{ wrapper: 'w-full' }">
               <UInput v-model="form.dateStr" type="date" class="w-full" />
             </UFormField>
           </div>

@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -22,12 +22,12 @@
 
       <!-- Content Container -->
       <div class="container mx-auto px-6 py-8 max-w-md">
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">Reset Password</h2>
+            <h2 class="text-lg font-semibold">Reset Password</h2>
           </template>
 
-          <p class="text-slate-400 mb-6">
+          <p class="text-muted mb-6">
             Enter your email address and we'll send you a link to reset your
             password.
           </p>
@@ -38,20 +38,13 @@
             @submit="onSubmit"
             class="space-y-4"
           >
-            <UFormField
-              label="Email"
-              name="email"
-              :ui="{ label: 'text-white mb-2' }"
-            >
+            <UFormField label="Email" name="email">
               <UInput
                 v-model="formState.email"
                 type="email"
                 placeholder="your@email.com"
                 required
                 class="w-full"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white w-full',
-                }"
               />
             </UFormField>
 
@@ -82,7 +75,7 @@
           </UForm>
 
           <template #footer>
-            <div class="text-center text-sm text-slate-400">
+            <div class="text-center text-sm text-muted">
               Remember your password?
               <NuxtLink
                 to="/auth/login"

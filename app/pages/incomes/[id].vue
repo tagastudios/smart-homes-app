@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
       >
@@ -16,15 +16,15 @@
         </div>
       </div>
       <div class="container mx-auto px-6 py-6">
-        <UCard class="bg-slate-900 border-slate-800">
-          <div class="space-y-2 text-white">
+        <UCard class="bg-elevated border border-default">
+          <div class="space-y-2">
             <p>
-              <span class="text-slate-400">Amount:</span> ${{
+              <span class="text-muted">Amount:</span> ${{
                 (income?.amount || 0).toFixed(2)
               }}
             </p>
             <p class="flex items-center gap-2">
-              <span class="text-slate-400">Project:</span>
+              <span class="text-muted">Project:</span>
               <template v-if="income?.projectId && projectName">
                 <UButton
                   :to="`/projects/${income?.projectId}/activity`"
@@ -36,7 +36,7 @@
               <span v-else>—</span>
             </p>
             <p class="flex items-center gap-2">
-              <span class="text-slate-400">Account:</span>
+              <span class="text-muted">Account:</span>
               <template v-if="income?.accountId && accountName">
                 <UButton
                   :to="`/accounts/${income?.accountId}/activity`"
@@ -48,11 +48,11 @@
               <span v-else>—</span>
             </p>
             <p>
-              <span class="text-slate-400">Description:</span>
+              <span class="text-muted">Description:</span>
               {{ income?.description || "—" }}
             </p>
             <p>
-              <span class="text-slate-400">Date:</span>
+              <span class="text-muted">Date:</span>
               {{ formatDate(income?.date) }}
             </p>
           </div>

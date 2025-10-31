@@ -8,7 +8,7 @@
       @update:model-value="handleUpdate"
       class="w-full"
       :ui="{
-        base: ui.base + ' w-full',
+        base: `${ui.base} w-full`,
         trigger: ui.trigger,
         item: ui.option,
       }"
@@ -25,7 +25,7 @@
         </div>
       </template>
       <template #content-bottom>
-        <div v-if="allowCustom" class="border-t border-slate-700 p-2">
+        <div v-if="allowCustom" class="border-t border-default p-2">
           <UButton
             variant="ghost"
             size="sm"
@@ -39,7 +39,7 @@
         </div>
       </template>
       <template #empty>
-        <div class="p-4 text-center text-slate-400 text-sm">
+        <div class="p-4 text-center text-muted text-sm">
           No options available
         </div>
       </template>
@@ -49,13 +49,10 @@
   <!-- Custom Creation Modal -->
   <UModal v-model:open="showCreateModal" :ui="modalUi">
     <template #content>
-      <div class="p-6 bg-slate-900 text-white">
+      <div class="p-6 bg-elevated text-default">
         <h3 class="text-lg font-semibold mb-4">{{ customModalTitle }}</h3>
         <div class="space-y-4">
-          <UFormField
-            label="Name"
-            :ui="{ label: 'text-white', wrapper: 'w-full' }"
-          >
+          <UFormField label="Name" :ui="{ wrapper: 'w-full' }">
             <div class="w-full">
               <UInput
                 v-model="customName"
@@ -69,14 +66,11 @@
 
           <!-- Icon selection removed - using default i-lucide-star for all custom types -->
 
-          <UFormField
-            label="Color"
-            :ui="{ label: 'text-white', wrapper: 'w-full' }"
-          >
+          <UFormField label="Color" :ui="{ wrapper: 'w-full' }">
             <div class="flex items-start gap-3 w-full">
               <button
                 type="button"
-                class="w-16 h-16 rounded-lg border-2 border-slate-700 shrink-0 cursor-pointer hover:border-purple-500 transition-colors"
+                class="w-16 h-16 rounded-lg border-2 border-default shrink-0 cursor-pointer hover:border-primary transition-colors"
                 :style="{ backgroundColor: customColor }"
                 @click="colorInputRef?.click()"
               />
@@ -87,7 +81,7 @@
                 class="hidden"
               />
               <div class="flex-1 flex items-center">
-                <span class="text-sm text-slate-400">{{ customColor }}</span>
+                <span class="text-sm text-muted">{{ customColor }}</span>
               </div>
             </div>
           </UFormField>
@@ -157,11 +151,12 @@ const props = withDefaults(defineProps<Props>(), {
   customLabel: "Add Custom...",
   customModalTitle: "Create New Item",
   ui: () => ({
-    base: "bg-slate-800 border-slate-700 text-white focus:ring-purple-500",
-    trigger: "text-white",
-    option: "text-white hover:bg-slate-700",
-    inputBase: "bg-slate-800 border-slate-700 text-white placeholder-slate-400",
-    createButton: "text-purple-400 hover:text-purple-300 w-full",
+    base: "bg-accented border border-default text-default focus:ring-primary",
+    trigger: "text-default",
+    option: "hover:bg-accented/80",
+    inputBase:
+      "bg-accented border border-default placeholder:text-muted focus:ring-primary",
+    createButton: "text-primary hover:text-primary-600 w-full",
     wrapper: "w-full",
   }),
 });
@@ -256,6 +251,6 @@ const modalUi = {
   wrapper: "z-50",
   overlay: { base: "bg-black/40 backdrop-blur-sm" },
   container: { padding: "p-0" },
-  content: { base: "bg-slate-900" },
+  content: { base: "bg-elevated" },
 };
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Receipt Image -->
-    <UCard class="bg-slate-900 border-slate-800">
+    <UCard class="bg-elevated border border-default">
       <div class="relative">
         <img
           :src="receipt.imageUrl"
@@ -9,7 +9,7 @@
           class="w-full max-h-80 object-contain rounded-xl shadow-lg transform rotate-1"
         />
         <div
-          class="absolute inset-0 bg-linear-to-br from-transparent to-slate-900/20 rounded-xl"
+          class="absolute inset-0 bg-linear-to-br from-transparent to-default/20 rounded-xl"
         ></div>
       </div>
     </UCard>
@@ -27,10 +27,10 @@
     />
 
     <!-- Receipt Details -->
-    <UCard class="bg-slate-900 border-slate-800">
+    <UCard class="bg-elevated border border-default">
       <div class="p-4">
         <div class="flex items-center justify-between mb-0">
-          <h3 class="text-lg font-bold text-white">Receipt Details</h3>
+          <h3 class="text-lg font-bold">Receipt Details</h3>
           <div class="flex items-center gap-2">
             <UButton
               v-if="!isEditingDetails"
@@ -38,7 +38,7 @@
               variant="ghost"
               size="sm"
               icon="i-lucide-edit"
-              class="text-slate-400 hover:text-white"
+              class="text-muted hover:text-default"
             />
             <UButton
               v-else
@@ -56,7 +56,7 @@
                   ? 'i-lucide-chevron-up'
                   : 'i-lucide-chevron-down'
               "
-              class="text-slate-400 hover:text-white"
+              class="text-muted hover:text-default"
               @click="isCollapsedDetails = !isCollapsedDetails"
             />
           </div>
@@ -68,26 +68,26 @@
           class="space-y-4 mt-4"
         >
           <div class="flex justify-between items-center">
-            <span class="text-slate-400">Merchant:</span>
-            <span class="text-white font-medium">{{
+            <span class="text-muted">Merchant:</span>
+            <span class="font-medium">{{
               receiptDetails.merchant || "Not set"
             }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-slate-400">Date:</span>
-            <span class="text-white font-medium">{{
+            <span class="text-muted">Date:</span>
+            <span class="font-medium">{{
               receiptDetails.date || "Not set"
             }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-slate-400">Category:</span>
-            <span class="text-white font-medium">{{
+            <span class="text-muted">Category:</span>
+            <span class="font-medium">{{
               receiptDetails.category || "Not set"
             }}</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-slate-400">Payment Method:</span>
-            <span class="text-white font-medium">{{
+            <span class="text-muted">Payment Method:</span>
+            <span class="font-medium">{{
               getPaymentMethodName(receiptDetails.paymentMethod) || "Not set"
             }}</span>
           </div>
@@ -95,16 +95,14 @@
             v-if="receiptDetails.projectId"
             class="flex justify-between items-center"
           >
-            <span class="text-slate-400">Project:</span>
-            <span class="text-white font-medium">{{
+            <span class="text-muted">Project:</span>
+            <span class="font-medium">{{
               getProjectName(receiptDetails.projectId)
             }}</span>
           </div>
           <div v-if="receiptDetails.notes" class="flex flex-col gap-1">
-            <span class="text-slate-400">Notes:</span>
-            <span class="text-white font-medium">{{
-              receiptDetails.notes
-            }}</span>
+            <span class="text-muted">Notes:</span>
+            <span class="font-medium">{{ receiptDetails.notes }}</span>
           </div>
         </div>
 
@@ -114,51 +112,39 @@
           class="space-y-6 mt-4"
         >
           <!-- Merchant -->
-          <UFormField label="Merchant" :ui="{ label: 'text-white mb-2' }">
+          <UFormField label="Merchant">
             <div class="flex items-center gap-3">
               <UIcon
                 name="i-lucide-file-text"
-                class="w-5 h-5 text-slate-400 shrink-0"
+                class="w-5 h-5 text-muted shrink-0"
               />
               <UInput
                 v-model="receiptDetails.merchant"
                 placeholder="Enter merchant name"
                 class="flex-1"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500',
-                }"
               />
             </div>
           </UFormField>
 
           <!-- Date -->
-          <UFormField label="Date" :ui="{ label: 'text-white mb-2' }">
+          <UFormField label="Date">
             <div class="flex items-center gap-3">
               <UIcon
                 name="i-lucide-calendar"
-                class="w-5 h-5 text-slate-400 shrink-0"
+                class="w-5 h-5 text-muted shrink-0"
               />
               <UInput
                 v-model="receiptDetails.date"
                 type="date"
                 class="flex-1"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500',
-                }"
               />
             </div>
           </UFormField>
 
           <!-- Category -->
-          <UFormField
-            label="Category"
-            :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-          >
+          <UFormField label="Category" :ui="{ wrapper: 'w-full' }">
             <div class="flex items-center gap-3 w-full">
-              <UIcon
-                name="i-lucide-tag"
-                class="w-5 h-5 text-slate-400 shrink-0"
-              />
+              <UIcon name="i-lucide-tag" class="w-5 h-5 text-muted shrink-0" />
               <div class="flex-1">
                 <UI-TypeSelectMenu
                   v-model="receiptDetails.category"
@@ -173,14 +159,11 @@
           </UFormField>
 
           <!-- Payment Method -->
-          <UFormField
-            label="Payment Method"
-            :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-          >
+          <UFormField label="Payment Method" :ui="{ wrapper: 'w-full' }">
             <div class="flex items-center gap-3 w-full">
               <UIcon
                 name="i-lucide-credit-card"
-                class="w-5 h-5 text-slate-400 shrink-0"
+                class="w-5 h-5 text-muted shrink-0"
               />
               <div class="flex-1">
                 <USelectMenu
@@ -189,9 +172,6 @@
                   placeholder="Select payment method"
                   value-key="value"
                   class="w-full"
-                  :ui="{
-                    base: 'bg-slate-800 border-slate-700 text-white focus:ring-purple-500 w-full',
-                  }"
                 >
                   <template #item="{ item }">
                     <div class="flex items-center gap-2">
@@ -224,16 +204,12 @@
           <UFormField
             label="Project"
             hint="Optional"
-            :ui="{
-              label: 'text-white mb-2',
-              hint: 'text-slate-400',
-              wrapper: 'w-full',
-            }"
+            :ui="{ wrapper: 'w-full', hint: 'text-muted' }"
           >
             <div class="flex items-center gap-3 w-full">
               <UIcon
                 name="i-lucide-folder"
-                class="w-5 h-5 text-slate-400 shrink-0"
+                class="w-5 h-5 text-muted shrink-0"
               />
               <div class="flex-1">
                 <USelectMenu
@@ -272,21 +248,18 @@
           <UFormField
             label="Notes"
             hint="Optional"
-            :ui="{ label: 'text-white mb-2', hint: 'text-slate-400' }"
+            :ui="{ hint: 'text-muted' }"
           >
             <div class="flex items-start gap-3">
               <UIcon
                 name="i-lucide-file-text"
-                class="w-5 h-5 text-slate-400 shrink-0 mt-1"
+                class="w-5 h-5 text-muted shrink-0 mt-1"
               />
               <UTextarea
                 v-model="receiptDetails.notes"
                 placeholder="Add any additional notes"
                 rows="2"
                 class="flex-1"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500',
-                }"
               />
             </div>
           </UFormField>
@@ -295,12 +268,10 @@
     </UCard>
 
     <!-- Line Items -->
-    <UCard class="bg-slate-900 border-slate-800">
+    <UCard class="bg-elevated border border-default">
       <div class="p-4">
         <div class="flex items-center justify-between mb-0">
-          <h3 class="text-lg font-bold text-white">
-            Line Items ({{ items.length }})
-          </h3>
+          <h3 class="text-lg font-bold">Line Items ({{ items.length }})</h3>
           <div class="flex items-center gap-2">
             <UButton
               v-if="!isEditingItems"
@@ -308,7 +279,7 @@
               variant="ghost"
               size="sm"
               icon="i-lucide-edit"
-              class="text-slate-400 hover:text-white"
+              class="text-muted hover:text-default"
             />
             <UButton
               v-else
@@ -326,7 +297,7 @@
                   ? 'i-lucide-chevron-up'
                   : 'i-lucide-chevron-down'
               "
-              class="text-slate-400 hover:text-white"
+              class="text-muted hover:text-default"
               @click="isCollapsedItems = !isCollapsedItems"
             />
           </div>
@@ -337,32 +308,30 @@
           <div
             v-for="(item, index) in items"
             :key="index"
-            class="bg-slate-800 rounded-xl p-5 border border-slate-700 hover:border-slate-600 transition-colors"
+            class="bg-accented rounded-xl p-5 border border-default transition-colors hover:border-default/70"
           >
             <div class="flex justify-between items-start mb-3">
               <div class="flex-1 pr-4">
-                <h4
-                  class="text-base font-semibold text-white mb-2 leading-tight"
-                >
+                <h4 class="text-base font-semibold mb-2 leading-tight">
                   {{ item.name || "Unnamed Item" }}
                 </h4>
               </div>
               <div class="text-right shrink-0">
-                <div class="text-lg font-bold text-white">
+                <div class="text-lg font-bold">
                   ${{
                     formatCurrency((item.price || 0) * (item.quantity || 1))
                   }}
                 </div>
               </div>
             </div>
-            <div class="flex items-center gap-6 pt-3 border-t border-slate-700">
-              <div class="text-sm text-slate-400">
-                <span class="font-medium text-slate-300">Qty:</span>
-                <span class="ml-1 text-white">{{ item.quantity || 1 }}</span>
+            <div class="flex items-center gap-6 pt-3 border-t border-default">
+              <div class="text-sm text-muted">
+                <span class="font-medium text-muted">Qty:</span>
+                <span class="ml-1 font-medium">{{ item.quantity || 1 }}</span>
               </div>
-              <div class="text-sm text-slate-400">
-                <span class="font-medium text-slate-300">Price:</span>
-                <span class="ml-1 text-white"
+              <div class="text-sm text-muted">
+                <span class="font-medium text-muted">Price:</span>
+                <span class="ml-1 font-medium"
                   >${{ formatCurrency(item.price || 0) }}</span
                 >
               </div>
@@ -382,78 +351,56 @@
           <div
             v-for="(item, index) in items"
             :key="index"
-            class="bg-slate-800 rounded-xl p-5 border border-slate-700"
+            class="bg-accented rounded-xl p-5 border border-default"
           >
             <div class="space-y-4">
               <!-- Item Name - Full Width -->
               <div>
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-white text-sm">Item Name</span>
+                  <span class="text-sm font-medium">Item Name</span>
                   <UButton
                     size="sm"
                     variant="ghost"
                     color="red"
                     icon="i-lucide-trash-2"
                     @click="removeItem(index)"
-                    class="text-red-400 hover:text-red-300 hover:bg-red-500/10 shrink-0"
+                    class="text-muted hover:text-default"
                   />
                 </div>
                 <UInput
                   v-model="item.name"
                   placeholder="Enter item name"
                   class="w-full"
-                  :ui="{
-                    base: 'bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:ring-purple-500 text-base py-2.5',
-                  }"
                 />
               </div>
 
               <!-- Quantity, Price, Category - Horizontal Row -->
               <div class="grid grid-cols-12 gap-4">
                 <div class="col-span-3">
-                  <UFormField
-                    label="Quantity"
-                    :ui="{ label: 'text-white text-sm mb-2' }"
-                  >
+                  <UFormField label="Quantity">
                     <UInput
                       v-model.number="item.quantity"
                       type="number"
                       min="1"
                       placeholder="1"
                       class="w-full"
-                      :ui="{
-                        base: 'bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:ring-purple-500 text-base h-11',
-                      }"
                     />
                   </UFormField>
                 </div>
-
-                <div class="col-span-4">
-                  <UFormField
-                    label="Price"
-                    :ui="{ label: 'text-white text-sm mb-2' }"
-                  >
+                <div class="col-span-3">
+                  <UFormField label="Price">
                     <UInput
                       v-model.number="item.price"
                       type="number"
+                      min="0"
                       step="0.01"
                       placeholder="0.00"
                       class="w-full"
-                      :ui="{
-                        base: 'bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:ring-purple-500 text-base h-11',
-                      }"
                     />
                   </UFormField>
                 </div>
-
-                <div class="col-span-5">
-                  <UFormField
-                    label="Category"
-                    :ui="{
-                      label: 'text-white text-sm mb-2',
-                      wrapper: 'w-full',
-                    }"
-                  >
+                <div class="col-span-6">
+                  <UFormField label="Category">
                     <UI-TypeSelectMenu
                       v-model="item.category"
                       :options="categoryOptions"
@@ -467,10 +414,10 @@
               </div>
 
               <!-- Total for this item -->
-              <div class="flex justify-end pt-2 border-t border-slate-700">
-                <div class="text-sm text-slate-400">
+              <div class="flex justify-end pt-2 border-t border-default">
+                <div class="text-sm text-muted">
                   <span class="font-medium">Subtotal:</span>
-                  <span class="ml-2 text-lg font-bold text-white">
+                  <span class="ml-2 text-lg font-bold">
                     ${{
                       formatCurrency((item.price || 0) * (item.quantity || 1))
                     }}
@@ -487,7 +434,7 @@
             @click="addItem"
             variant="outline"
             size="lg"
-            class="w-full border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-slate-500 font-medium"
+            class="w-full border border-default text-default hover:bg-accented hover:border-default font-medium"
           >
             <UIcon name="i-lucide-plus" class="mr-2 size-5" />
             Add Item
@@ -499,10 +446,10 @@
     </UCard>
 
     <!-- Financial Summary -->
-    <UCard class="bg-slate-900 border-slate-800">
+    <UCard class="bg-elevated border border-default">
       <div class="p-4">
         <div class="flex items-center justify-between mb-0">
-          <h3 class="text-lg font-bold text-white">Financial Summary</h3>
+          <h3 class="text-lg font-bold">Financial Summary</h3>
           <div class="flex items-center gap-2">
             <UButton
               v-if="!isEditingSummary"
@@ -510,7 +457,7 @@
               variant="ghost"
               size="sm"
               icon="i-lucide-edit"
-              class="text-slate-400 hover:text-white"
+              class="text-muted hover:text-default"
             />
             <UButton
               v-else
@@ -528,7 +475,7 @@
                   ? 'i-lucide-chevron-up'
                   : 'i-lucide-chevron-down'
               "
-              class="text-slate-400 hover:text-white"
+              class="text-muted hover:text-default"
               @click="isCollapsedSummary = !isCollapsedSummary"
             />
           </div>
@@ -537,22 +484,22 @@
         <!-- View Mode -->
         <div v-if="!isCollapsedSummary && !isEditingSummary" class="mt-4">
           <div class="flex justify-between items-center mb-2">
-            <span class="font-medium text-white">Subtotal:</span>
-            <span class="text-lg font-bold text-white"
+            <span class="font-medium">Subtotal:</span>
+            <span class="text-lg font-bold"
               >${{ formatCurrency(calculatedSubtotal) }}</span
             >
           </div>
           <div class="flex justify-between items-center mb-2">
-            <span class="font-medium text-white">Tax:</span>
-            <span class="text-lg font-bold text-white"
+            <span class="font-medium">Tax:</span>
+            <span class="text-lg font-bold"
               >${{ formatCurrency(receiptDetails.tax || 0) }}</span
             >
           </div>
           <div
-            class="flex justify-between items-center pt-2 border-t border-slate-700"
+            class="flex justify-between items-center pt-2 border-t border-default"
           >
-            <span class="font-medium text-white">Total:</span>
-            <span class="text-xl font-bold text-white"
+            <span class="font-medium">Total:</span>
+            <span class="text-xl font-bold"
               >${{ formatCurrency(receiptDetails.totalAmount || 0) }}</span
             >
           </div>
@@ -569,38 +516,50 @@
           v-if="!isCollapsedSummary && isEditingSummary"
           class="space-y-4 mt-4"
         >
-          <UFormField label="Subtotal" :ui="{ label: 'text-white mb-2' }">
-            <UInput
-              v-model.number="receiptDetails.subtotal"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              :ui="{
-                base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500',
-              }"
-            />
+          <UFormField label="Subtotal">
+            <div class="flex items-center gap-3">
+              <UIcon
+                name="i-lucide-calculator"
+                class="w-5 h-5 text-muted shrink-0"
+              />
+              <UInput
+                v-model.number="receiptDetails.subtotal"
+                type="number"
+                min="0"
+                step="0.01"
+                class="flex-1"
+              />
+            </div>
           </UFormField>
-          <UFormField label="Tax" :ui="{ label: 'text-white mb-2' }">
-            <UInput
-              v-model.number="receiptDetails.tax"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              :ui="{
-                base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500',
-              }"
-            />
+          <UFormField label="Tax">
+            <div class="flex items-center gap-3">
+              <UIcon
+                name="i-lucide-percent"
+                class="w-5 h-5 text-muted shrink-0"
+              />
+              <UInput
+                v-model.number="receiptDetails.tax"
+                type="number"
+                min="0"
+                step="0.01"
+                class="flex-1"
+              />
+            </div>
           </UFormField>
-          <UFormField label="Total Amount" :ui="{ label: 'text-white mb-2' }">
-            <UInput
-              v-model.number="receiptDetails.totalAmount"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              :ui="{
-                base: 'bg-slate-800 border-slate-700 text-white placeholder-slate-400 focus:ring-purple-500',
-              }"
-            />
+          <UFormField label="Total Amount">
+            <div class="flex items-center gap-3">
+              <UIcon
+                name="i-lucide-receipt"
+                class="w-5 h-5 text-muted shrink-0"
+              />
+              <UInput
+                v-model.number="receiptDetails.totalAmount"
+                type="number"
+                min="0"
+                step="0.01"
+                class="flex-1"
+              />
+            </div>
           </UFormField>
         </div>
       </div>
@@ -611,8 +570,12 @@
       <UButton
         @click="rejectReceipt"
         size="xl"
-        class="flex-1 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-semibold py-4 px-6 rounded-lg"
-        :ui="{ base: 'flex items-center justify-center' }"
+        color="error"
+        variant="outline"
+        class="flex-1 font-semibold py-4 px-6 rounded-lg"
+        :ui="{
+          base: 'flex items-center justify-center border border-default text-default hover:bg-accented',
+        }"
         :loading="isRejecting"
       >
         <UIcon name="i-lucide-x" class="mr-2 size-5" />

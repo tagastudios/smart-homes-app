@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -18,15 +18,12 @@
       </div>
 
       <div class="container mx-auto px-6 py-4 pb-28">
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <div
             ref="scrollRef"
             class="space-y-4 max-h-[60vh] overflow-y-auto pr-1"
           >
-            <div
-              v-if="messages.length === 0"
-              class="text-slate-400 text-sm py-6"
-            >
+            <div v-if="messages.length === 0" class="text-muted text-sm py-6">
               Ask anything about your spending, income, projects, or pending
               receipts.
             </div>
@@ -42,13 +39,13 @@
                 :class="
                   m.role === 'user'
                     ? 'bg-blue-600/30 text-white'
-                    : 'bg-slate-800 text-slate-100'
+                    : 'bg-accented text-default'
                 "
               >
                 <!-- Markdown content -->
                 <div
                   v-if="m.role === 'assistant'"
-                  class="prose prose-invert prose-sm max-w-none prose-headings:text-slate-100 prose-p:text-slate-200 prose-strong:text-white prose-ul:text-slate-200 prose-ol:text-slate-200 prose-li:text-slate-200 prose-code:text-purple-300 prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700"
+                  class="prose prose-sm max-w-none dark:prose-invert"
                   v-html="renderMarkdown(m.content)"
                 ></div>
                 <p v-else class="whitespace-pre-wrap">{{ m.content }}</p>
@@ -61,9 +58,9 @@
                   <div
                     v-for="(chart, idx) in m.charts"
                     :key="idx"
-                    class="bg-slate-900/50 rounded-lg p-4 border border-slate-700"
+                    class="bg-accented rounded-lg p-4 border border-default"
                   >
-                    <h4 class="text-white font-semibold mb-3">
+                    <h4 class="font-semibold mb-3">
                       {{ chart.title }}
                     </h4>
                     <ClientOnly>
@@ -77,7 +74,7 @@
                   </div>
                 </div>
 
-                <p class="text-xs text-slate-400 mt-2">
+                <p class="text-xs text-muted mt-2">
                   {{ formatTime(m.createdAt) }}
                 </p>
               </div>
@@ -85,7 +82,7 @@
 
             <div v-if="isStreaming" class="flex justify-start">
               <div
-                class="bg-slate-800 text-slate-100 rounded-2xl px-3 py-2 text-sm"
+                class="bg-accented text-default rounded-2xl px-3 py-2 text-sm"
               >
                 <span class="inline-flex gap-1 items-center">
                   <span class="animate-pulse">●</span>
@@ -104,7 +101,7 @@
 
       <!-- Composer -->
       <div class="fixed bottom-0 left-0 right-0 z-40 px-6 pb-6">
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <div class="flex items-end gap-3">
             <UTextarea
               v-model="input"
@@ -112,7 +109,7 @@
               autoresize
               placeholder="Type a message..."
               class="flex-1"
-              :ui="{ base: 'bg-slate-800 text-white border-slate-700' }"
+              :ui="{ base: 'bg-accented text-default border border-default' }"
             />
             <UButton
               icon="i-lucide-send"

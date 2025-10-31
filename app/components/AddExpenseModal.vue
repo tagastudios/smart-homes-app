@@ -4,7 +4,7 @@
       :ui="{
         base: 'h-full flex flex-col',
         rounded: 'rounded-2xl',
-        divide: 'divide-y divide-gray-700',
+        divide: 'divide-y divide-default',
         header: { padding: 'px-6 py-4' },
         body: { padding: 'px-6 py-6' },
         footer: { padding: 'px-6 py-4' },
@@ -12,20 +12,20 @@
     >
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-white">Add Expense</h3>
+          <h3 class="text-lg font-semibold">Add Expense</h3>
           <UButton
             variant="ghost"
             icon="i-lucide-x"
             @click="$emit('close')"
-            class="text-slate-400 hover:text-white"
+            class="text-muted hover:text-default"
           />
         </div>
       </template>
 
       <div class="space-y-4">
-        <p class="text-slate-400">Expense form will be implemented here...</p>
-        <div class="bg-slate-800 rounded-xl p-4">
-          <p class="text-sm text-slate-300">
+        <p class="text-muted">Expense form will be implemented here...</p>
+        <div class="bg-accented rounded-xl p-4">
+          <p class="text-sm text-muted">
             This is a placeholder for the expense form.
           </p>
         </div>

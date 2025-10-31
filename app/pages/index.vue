@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="w-full bg-slate-950">
+    <div class="w-full bg-default text-default">
       <!-- Header with gradient background -->
       <div class="bg-gradient-purple-blue p-6 pt-12 rounded-b-3xl">
         <div class="flex justify-between items-start mb-6">
@@ -81,44 +81,44 @@
       <!-- Quick Actions with overlapping effect -->
       <div class="px-6 -mt-4 mb-6">
         <UCard
-          class="bg-slate-900 rounded-2xl p-3 border border-slate-800 shadow-xl"
+          class="bg-elevated rounded-2xl p-3 border border-default shadow-xl"
         >
-          <p class="text-slate-400 text-sm mb-3">Quick Actions</p>
+          <p class="text-muted text-sm mb-3">Quick Actions</p>
           <div class="grid grid-cols-3 gap-3">
             <UButton
               to="/reports"
               variant="ghost"
-              class="flex flex-col items-center gap-2 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all touch-target"
+              class="flex flex-col items-center gap-2 p-3 bg-accented rounded-xl hover:bg-accented/80 transition-all touch-target"
             >
               <UIcon
                 name="i-lucide-chart-column"
                 class="w-6 h-6 text-purple-400"
               />
-              <span class="text-xs text-slate-300">Reports</span>
+              <span class="text-xs text-muted">Reports</span>
             </UButton>
 
             <UButton
               to="/projects"
               variant="ghost"
-              class="flex flex-col items-center gap-2 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all touch-target"
+              class="flex flex-col items-center gap-2 p-3 bg-accented rounded-xl hover:bg-accented/80 transition-all touch-target"
             >
               <UIcon
                 name="i-lucide-folder-open"
                 class="w-6 h-6 text-blue-400"
               />
-              <span class="text-xs text-slate-300">Projects</span>
+              <span class="text-xs text-muted">Projects</span>
             </UButton>
 
             <UButton
               to="/accounts"
               variant="ghost"
-              class="flex flex-col items-center gap-2 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all touch-target"
+              class="flex flex-col items-center gap-2 p-3 bg-accented rounded-xl hover:bg-accented/80 transition-all touch-target"
             >
               <UIcon
                 name="i-lucide-credit-card"
                 class="w-6 h-6 text-green-400"
               />
-              <span class="text-xs text-slate-300">Accounts</span>
+              <span class="text-xs text-muted">Accounts</span>
             </UButton>
           </div>
         </UCard>
@@ -127,7 +127,7 @@
       <!-- Recent Transactions -->
       <div class="px-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-white">Recent</h2>
+          <h2 class="text-xl font-bold">Recent</h2>
           <UButton to="/recent" variant="link" class="text-purple-400 text-sm">
             View all
           </UButton>
@@ -137,13 +137,13 @@
           <UCard
             v-for="tx in recentRealTransactions"
             :key="tx.id"
-            class="bg-slate-900 rounded-2xl p-3 border border-slate-800 cursor-pointer"
+            class="bg-elevated rounded-2xl p-3 border border-default cursor-pointer"
             @click="goToTx(tx)"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div
-                  class="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-800"
+                  class="w-10 h-10 rounded-xl flex items-center justify-center bg-accented"
                 >
                   <UIcon
                     :name="
@@ -158,8 +158,8 @@
                   />
                 </div>
                 <div>
-                  <p class="text-white font-medium">{{ tx.description }}</p>
-                  <p class="text-slate-400 text-sm">
+                  <p class="font-medium">{{ tx.description }}</p>
+                  <p class="text-muted text-sm">
                     {{ formatDate(tx.date) }}
                   </p>
                 </div>
@@ -182,19 +182,19 @@
         <!-- Pending Receipts -->
         <div v-if="pendingList.length > 0" class="mt-8">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold text-white">Pending Receipts</h2>
+            <h2 class="text-xl font-bold">Pending Receipts</h2>
           </div>
           <div class="space-y-3">
             <UCard
               v-for="r in pendingList"
               :key="r.id"
-              class="bg-slate-900 rounded-2xl p-3 border border-slate-800 cursor-pointer"
+              class="bg-elevated rounded-2xl p-3 border border-default cursor-pointer"
               @click="goReceipt(r.id)"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center"
+                    class="w-10 h-10 rounded-xl bg-accented flex items-center justify-center"
                   >
                     <UIcon
                       name="i-lucide-receipt-text"
@@ -202,10 +202,10 @@
                     />
                   </div>
                   <div>
-                    <p class="text-white font-medium">
+                    <p class="font-medium">
                       Receipt #{{ r.receiptNumber || r.id.slice(-6) }}
                     </p>
-                    <p class="text-slate-400 text-sm">
+                    <p class="text-muted text-sm">
                       {{ formatDate(r.uploadDate) }}
                     </p>
                   </div>

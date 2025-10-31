@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -15,9 +15,9 @@
 
       <!-- Content Container -->
       <div class="container mx-auto px-6 py-8 max-w-md">
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
-            <h2 class="text-lg font-semibold text-white">Sign In</h2>
+            <h2 class="text-lg font-semibold">Sign In</h2>
           </template>
 
           <UForm
@@ -26,37 +26,23 @@
             @submit="onSubmit"
             class="space-y-4"
           >
-            <UFormField
-              label="Email"
-              name="email"
-              :ui="{ label: 'text-white mb-2' }"
-            >
+            <UFormField label="Email" name="email">
               <UInput
                 v-model="formState.email"
                 type="email"
                 placeholder="your@email.com"
                 required
                 class="w-full"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white w-full',
-                }"
               />
             </UFormField>
 
-            <UFormField
-              label="Password"
-              name="password"
-              :ui="{ label: 'text-white mb-2' }"
-            >
+            <UFormField label="Password" name="password">
               <UInput
                 v-model="formState.password"
                 type="password"
                 placeholder="••••••••"
                 required
                 class="w-full"
-                :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white w-full',
-                }"
               />
             </UFormField>
 
@@ -79,10 +65,10 @@
 
             <div class="relative">
               <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-slate-700" />
+                <div class="w-full border-t border-default" />
               </div>
               <div class="relative flex justify-center text-sm">
-                <span class="px-2 bg-slate-900 text-slate-400">
+                <span class="px-2 bg-elevated text-muted">
                   Or continue with
                 </span>
               </div>
@@ -94,7 +80,7 @@
               variant="outline"
               block
               icon="i-simple-icons-google"
-              class="border-slate-700 text-slate-300 hover:bg-slate-800"
+              class="border border-default text-muted hover:bg-accented"
             >
               Sign in with Google
             </UButton>
@@ -108,7 +94,7 @@
               >
                 Forgot password?
               </NuxtLink>
-              <div class="text-sm text-slate-400">
+              <div class="text-sm text-muted">
                 Don't have an account?
                 <NuxtLink
                   to="/auth/signup"

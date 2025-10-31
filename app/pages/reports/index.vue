@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -24,10 +24,10 @@
 
       <div class="container mx-auto px-6 py-6 space-y-6">
         <!-- Filters -->
-        <UCard class="bg-slate-900 border-slate-800">
+        <UCard class="bg-elevated border border-default">
           <template #header>
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-white">Filters</h2>
+              <h2 class="text-lg font-semibold">Filters</h2>
               <div class="flex gap-2">
                 <UButton size="sm" variant="ghost" @click="setPreset('today')"
                   >Today</UButton
@@ -46,22 +46,13 @@
           </template>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <UFormField
-              label="From"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="From" :ui="{ wrapper: 'w-full' }">
               <UInput v-model="filters.fromStr" type="date" class="w-full" />
             </UFormField>
-            <UFormField
-              label="To"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="To" :ui="{ wrapper: 'w-full' }">
               <UInput v-model="filters.toStr" type="date" class="w-full" />
             </UFormField>
-            <UFormField
-              label="Project"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="Project" :ui="{ wrapper: 'w-full' }">
               <USelectMenu
                 v-model="filters.projectId"
                 :items="projectOptions"
@@ -87,10 +78,7 @@
                 </template>
               </USelectMenu>
             </UFormField>
-            <UFormField
-              label="Account"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
-            >
+            <UFormField label="Account" :ui="{ wrapper: 'w-full' }">
               <USelectMenu
                 v-model="filters.accountId"
                 :items="accountOptions"
@@ -122,7 +110,7 @@
             </UFormField>
             <UFormField
               label="Category"
-              :ui="{ label: 'text-white mb-2', wrapper: 'w-full' }"
+              :ui="{ wrapper: 'w-full' }"
               class="sm:col-span-2 lg:col-span-1"
             >
               <UI-TypeSelectMenu
@@ -156,33 +144,33 @@
 
         <!-- KPIs -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <UCard class="bg-slate-900 border-slate-800">
+          <UCard class="bg-elevated border border-default">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-slate-400 text-sm">Total Income</p>
-                <p class="text-2xl font-bold text-white">
+                <p class="text-muted text-sm">Total Income</p>
+                <p class="text-2xl font-bold">
                   ${{ formatCurrency(kpis.totalIncome) }}
                 </p>
               </div>
               <UBadge class="bg-emerald-500/15 text-emerald-400">Income</UBadge>
             </div>
           </UCard>
-          <UCard class="bg-slate-900 border-slate-800">
+          <UCard class="bg-elevated border border-default">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-slate-400 text-sm">Total Expenses</p>
-                <p class="text-2xl font-bold text-white">
+                <p class="text-muted text-sm">Total Expenses</p>
+                <p class="text-2xl font-bold">
                   ${{ formatCurrency(kpis.totalExpenses) }}
                 </p>
               </div>
               <UBadge class="bg-rose-500/15 text-rose-400">Expenses</UBadge>
             </div>
           </UCard>
-          <UCard class="bg-slate-900 border-slate-800">
+          <UCard class="bg-elevated border border-default">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-slate-400 text-sm">Net Income</p>
-                <p class="text-2xl font-bold text-white">
+                <p class="text-muted text-sm">Net Income</p>
+                <p class="text-2xl font-bold">
                   ${{ formatCurrency(kpis.netIncome) }}
                 </p>
               </div>
@@ -193,16 +181,16 @@
 
         <!-- Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <UCard class="bg-slate-900 border-slate-800">
+          <UCard class="bg-elevated border border-default">
             <template #header>
-              <h3 class="text-white font-semibold">Income vs Expenses</h3>
+              <h3 class="font-semibold">Income vs Expenses</h3>
             </template>
             <div
               v-if="
                 lineSeries[0].data.length === 0 &&
                 lineSeries[1].data.length === 0
               "
-              class="flex items-center justify-center h-64 text-slate-400"
+              class="flex items-center justify-center h-64 text-muted"
             >
               <p>No data available for the selected date range</p>
             </div>
@@ -215,15 +203,15 @@
             />
           </UCard>
 
-          <UCard class="bg-slate-900 border-slate-800">
+          <UCard class="bg-elevated border border-default">
             <template #header>
-              <h3 class="text-white font-semibold">Category Breakdown</h3>
+              <h3 class="font-semibold">Category Breakdown</h3>
             </template>
             <div
               v-if="
                 donutSeries.length === 0 || donutSeries.every((v) => v === 0)
               "
-              class="flex items-center justify-center h-64 text-slate-400"
+              class="flex items-center justify-center h-64 text-muted"
             >
               <p>No expenses in the selected date range</p>
             </div>
@@ -236,16 +224,16 @@
             />
           </UCard>
 
-          <UCard class="bg-slate-900 border-slate-800 lg:col-span-2">
+          <UCard class="bg-elevated border border-default lg:col-span-2">
             <template #header>
-              <h3 class="text-white font-semibold">Top Expenses by Category</h3>
+              <h3 class="font-semibold">Top Expenses by Category</h3>
             </template>
             <div
               v-if="
                 barSeries[0].data.length === 0 ||
                 barSeries[0].data.every((v) => v === 0)
               "
-              class="flex items-center justify-center h-64 text-slate-400"
+              class="flex items-center justify-center h-64 text-muted"
             >
               <p>No expenses in the selected date range</p>
             </div>
@@ -261,7 +249,7 @@
 
         <!-- Export at bottom -->
         <div class="pt-2">
-          <UCard class="bg-slate-900 border-slate-800">
+          <UCard class="bg-elevated border border-default">
             <div class="sm:col-span-2 lg:col-span-1 flex items-end">
               <UButton
                 variant="outline"

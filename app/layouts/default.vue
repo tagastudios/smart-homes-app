@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-950">
+  <div class="min-h-screen bg-default">
     <!-- Main content with bottom padding for navigation -->
     <main class="pb-24">
       <slot />
@@ -27,7 +27,7 @@
             :class="
               isActive('/')
                 ? 'text-purple-400'
-                : 'text-slate-400 hover:text-slate-300'
+                : 'text-muted hover:text-default'
             "
           >
             <UIcon name="i-lucide-house" class="w-6 h-6" />
@@ -42,7 +42,7 @@
             :class="
               isActive('/reports')
                 ? 'text-purple-400'
-                : 'text-slate-400 hover:text-slate-300'
+                : 'text-muted hover:text-default'
             "
           >
             <UIcon name="i-lucide-chart-column" class="w-6 h-6" />
@@ -53,7 +53,7 @@
           <div class="relative -top-6 overflow-visible fab-overflow">
             <UButton
               size="lg"
-              class="w-16 h-16 bg-gradient-fab rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-4 border-slate-900 touch-target"
+              class="w-16 h-16 bg-gradient-fab rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform border-4 border-default touch-target"
               @click="toggleFabMenu"
             >
               <UIcon
@@ -72,7 +72,7 @@
             :class="
               isActive('/projects')
                 ? 'text-purple-400'
-                : 'text-slate-400 hover:text-slate-300'
+                : 'text-muted hover:text-default'
             "
           >
             <UIcon name="i-lucide-folder-open" class="w-6 h-6" />
@@ -87,7 +87,7 @@
             :class="
               isActive('/accounts')
                 ? 'text-purple-400'
-                : 'text-slate-400 hover:text-slate-300'
+                : 'text-muted hover:text-default'
             "
           >
             <UIcon name="i-lucide-credit-card" class="w-6 h-6" />

@@ -1,23 +1,19 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="min-h-screen bg-default text-default mobile-padding-bottom">
       <div class="container mx-auto px-4 py-8">
         <div class="mb-8">
           <div class="flex items-center justify-between mb-4">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-              Receipts
-            </h1>
+            <h1 class="text-3xl font-bold">Receipts</h1>
             <UButton to="/" variant="ghost" icon="i-heroicons-arrow-left">
               Back to Home
             </UButton>
           </div>
-          <p class="text-gray-600 dark:text-gray-300">
-            Process and organize receipt photos
-          </p>
+          <p class="text-muted">Process and organize receipt photos</p>
         </div>
 
         <!-- Upload Actions -->
-        <UCard class="mb-6">
+        <UCard class="mb-6 bg-elevated border border-default">
           <template #header>
             <h2 class="text-xl font-semibold">Capture Receipt</h2>
           </template>
@@ -143,7 +139,7 @@
         </UModal>
 
         <!-- Receipts List -->
-        <UCard>
+        <UCard class="bg-elevated border border-default">
           <template #header>
             <div class="flex items-center justify-between">
               <h2 class="text-xl font-semibold">Recent Receipts</h2>
@@ -159,9 +155,9 @@
           <div v-if="isLoading" class="text-center py-8">
             <UIcon
               name="i-heroicons-arrow-path"
-              class="animate-spin mx-auto h-8 w-8 text-gray-400 mb-4"
+              class="animate-spin mx-auto h-8 w-8 text-muted mb-4"
             />
-            <p class="text-gray-500">Loading receipts...</p>
+            <p class="text-muted">Loading receipts...</p>
           </div>
 
           <div
@@ -170,10 +166,10 @@
           >
             <UIcon
               name="i-heroicons-document"
-              class="mx-auto h-12 w-12 text-gray-400 mb-4"
+              class="mx-auto h-12 w-12 text-muted mb-4"
             />
-            <p class="text-gray-500 dark:text-gray-400">No receipts found</p>
-            <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">
+            <p class="text-muted">No receipts found</p>
+            <p class="text-sm text-muted mt-2">
               Start by taking a photo of your receipt
             </p>
           </div>
@@ -182,7 +178,7 @@
             <div
               v-for="receipt in filteredReceipts"
               :key="receipt.id"
-              class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              class="flex items-center justify-between p-4 border border-default rounded-lg hover:bg-accented transition-colors"
             >
               <div class="flex items-center space-x-4">
                 <div class="w-16 h-16 rounded-lg overflow-hidden">
@@ -197,16 +193,16 @@
                   />
                   <div
                     v-else
-                    class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+                    class="w-full h-full bg-accented flex items-center justify-center"
                   >
                     <UIcon
                       name="i-heroicons-document-text"
-                      class="text-gray-500 text-xl"
+                      class="text-muted text-xl"
                     />
                   </div>
                 </div>
                 <div>
-                  <p class="font-medium text-gray-900 dark:text-white">
+                  <p class="font-medium">
                     {{
                       receipt.receiptNumber
                         ? `Receipt #${String(receipt.receiptNumber).padStart(
@@ -216,7 +212,7 @@
                         : `Receipt ${receipt.id.slice(-8)}`
                     }}
                   </p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-muted">
                     {{ formatDate(receipt.uploadDate) }}
                   </p>
                 </div>
@@ -410,7 +406,7 @@ const getStatusColor = (status) => {
     processed: "green",
     error: "red",
   };
-  return colors[status] || "gray";
+  return colors[status] || "neutral";
 };
 
 const handleImageError = (event) => {

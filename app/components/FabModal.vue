@@ -24,7 +24,7 @@
           <!-- Scan Receipt -->
           <UButton
             variant="ghost"
-            class="w-full flex items-center justify-start gap-3 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all"
+            class="w-full flex items-center justify-start gap-3 p-3 bg-accented rounded-xl hover:bg-accented/80 transition-all"
             @click="handleAction('scan-receipt')"
           >
             <div
@@ -33,21 +33,18 @@
               <UIcon name="i-lucide-camera" class="w-5 h-5 text-purple-400" />
             </div>
             <div class="flex-1 text-left">
-              <p class="text-white font-medium">Scan Receipt</p>
-              <p class="text-slate-400 text-xs">
+              <p class="font-medium">Scan Receipt</p>
+              <p class="text-muted text-xs">
                 Capture and process receipt automatically
               </p>
             </div>
-            <UIcon
-              name="i-lucide-chevron-right"
-              class="w-4 h-4 text-slate-400"
-            />
+            <UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-muted" />
           </UButton>
 
           <!-- Add Expense -->
           <UButton
             variant="ghost"
-            class="w-full flex items-center justify-start gap-3 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all"
+            class="w-full flex items-center justify-start gap-3 p-3 bg-accented rounded-xl hover:bg-accented/80 transition-all"
             @click="handleAction('add-expense')"
           >
             <div
@@ -56,21 +53,16 @@
               <UIcon name="i-lucide-minus" class="w-5 h-5 text-red-400" />
             </div>
             <div class="flex-1 text-left">
-              <p class="text-white font-medium">Add Expense</p>
-              <p class="text-slate-400 text-xs">
-                Record a new business expense
-              </p>
+              <p class="font-medium">Add Expense</p>
+              <p class="text-muted text-xs">Record a new business expense</p>
             </div>
-            <UIcon
-              name="i-lucide-chevron-right"
-              class="w-4 h-4 text-slate-400"
-            />
+            <UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-muted" />
           </UButton>
 
           <!-- Add Income -->
           <UButton
             variant="ghost"
-            class="w-full flex items-center justify-start gap-3 p-3 bg-slate-800 rounded-xl hover:bg-slate-750 transition-all"
+            class="w-full flex items-center justify-start gap-3 p-3 bg-accented rounded-xl hover:bg-accented/80 transition-all"
             @click="handleAction('add-income')"
           >
             <div
@@ -82,13 +74,10 @@
               />
             </div>
             <div class="flex-1 text-left">
-              <p class="text-white font-medium">Add Income</p>
-              <p class="text-slate-400 text-xs">Record a new income source</p>
+              <p class="font-medium">Add Income</p>
+              <p class="text-muted text-xs">Record a new income source</p>
             </div>
-            <UIcon
-              name="i-lucide-chevron-right"
-              class="w-4 h-4 text-slate-400"
-            />
+            <UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-muted" />
           </UButton>
         </div>
       </div>
