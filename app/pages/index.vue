@@ -128,7 +128,7 @@
       <div class="px-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold text-white">Recent</h2>
-          <UButton variant="link" class="text-purple-400 text-sm">
+          <UButton to="/recent" variant="link" class="text-purple-400 text-sm">
             View all
           </UButton>
         </div>
@@ -366,7 +366,7 @@ const recentRealTransactions = computed(() => {
       const db = normalizeDate(b.date as unknown);
       return db.getTime() - da.getTime();
     })
-    .slice(0, 6);
+    .slice(0, 10);
 });
 
 const pendingList = computed(() =>
