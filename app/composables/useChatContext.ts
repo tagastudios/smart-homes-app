@@ -11,44 +11,75 @@ export const useChatContext = () => {
   };
 
   const buildContext = () => {
-    const ex = (expenses.value || [])
-      .slice(0, 50)
-      .map((e) => ({
-        id: e.id,
-        amount: e.amount,
-        category: e.category,
-        description: e.description,
-        date: formatDate(e.date),
-      }));
-    const inc = (incomes.value || [])
-      .slice(0, 50)
-      .map((i) => ({
-        id: i.id,
-        amount: i.amount,
-        description: i.description,
-        date: formatDate(i.date),
-      }));
+    // Include ALL expenses (no limit)
+    const ex = (expenses.value || []).map((e) => ({
+      id: e.id,
+      amount: e.amount,
+      category: e.category,
+      description: e.description,
+      date: formatDate(e.date),
+      projectId: e.projectId,
+      accountId: e.accountId,
+      receiptId: e.receiptId,
+      ocrData: e.ocrData
+        ? {
+            merchant: e.ocrData.merchant,
+            totalAmount: e.ocrData.totalAmount,
+            date: e.ocrData.date ? formatDate(e.ocrData.date) : undefined,
+          }
+        : undefined,
+    }));
+
+    // Include ALL incomes (no limit)
+    const inc = (incomes.value || []).map((i) => ({
+      id: i.id,
+      amount: i.amount,
+      description: i.description,
+      date: formatDate(i.date),
+      projectId: i.projectId,
+      accountId: i.accountId,
+    }));
+
+    // Include ALL accounts with full details
     const acc = (accounts.value || []).map((a) => ({
       id: a.id,
       name: a.name,
       type: a.type,
+      cardType: a.cardType,
+      lastFourDigits: a.lastFourDigits,
+      isActive: a.isActive,
     }));
+
+    // Include ALL projects with full details
     const proj = (projects.value || []).map((p) => ({
       id: p.id,
       name: p.name,
+      description: p.description,
       status: p.status,
       budget: p.budget,
       spent: p.spent,
+      startDate: formatDate(p.startDate),
+      endDate: p.endDate ? formatDate(p.endDate) : undefined,
+      amountLeft: Math.max(0, p.budget - p.spent),
+      budgetPercentage: p.budget > 0 ? (p.spent / p.budget) * 100 : 0,
     }));
-    const pend = (receipts.value || [])
-      .filter((r) => r.status === "uploaded" || r.status === "processing")
-      .map((r) => ({ id: r.id, uploadDate: formatDate(r.uploadDate) }));
+
+    // Include ALL receipts with full details
+    const receiptsData = (receipts.value || []).map((r) => ({
+      id: r.id,
+      status: r.status,
+      uploadDate: formatDate(r.uploadDate),
+      processedDate: r.processedDate ? formatDate(r.processedDate) : undefined,
+      receiptNumber: r.receiptNumber,
+      errorMessage: r.errorMessage,
+    }));
+
     return {
       expenses: ex,
       incomes: inc,
       accounts: acc,
       projects: proj,
-      pendingReceipts: pend,
+      receipts: receiptsData,
     };
   };
 

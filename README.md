@@ -1,8 +1,27 @@
-# Nuxt Minimal Starter
+# Smart Homes - Construction Business Expense Tracker
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A Progressive Web App (PWA) for construction business expense and income tracking built with Nuxt 4, Firebase, and modern UI components.
 
 ## Setup
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Firebase Configuration
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_AUTH_DOMAIN=your_auth_domain
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_APP_ID=your_app_id
+FIREBASE_STORAGE_BUCKET=your_storage_bucket
+FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+
+# OpenAI API Key (required for AI chat assistant)
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### Install Dependencies
 
 Make sure to install dependencies:
 
