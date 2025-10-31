@@ -1,6 +1,8 @@
 <template>
   <ClientOnly>
-    <div class="min-h-screen bg-slate-950 mobile-padding-bottom">
+    <div
+      class="min-h-screen bg-slate-950 mobile-padding-bottom overflow-visible"
+    >
       <!-- Gradient Header -->
       <div
         class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-6 rounded-b-3xl shadow-lg"
@@ -20,7 +22,7 @@
         </div>
       </div>
 
-      <div class="container mx-auto px-6 py-6 space-y-6">
+      <div class="container mx-auto px-6 py-6 space-y-6 overflow-visible">
         <!-- Account Stats Section -->
         <UCard class="bg-slate-900 border-slate-800">
           <template #header>
@@ -235,21 +237,25 @@
           </template>
 
           <div class="space-y-4">
-            <div class="flex items-center justify-between">
+            <div class="space-y-3">
               <div>
-                <p class="text-white font-medium">Theme</p>
+                <p class="text-white font-medium mb-1">Theme</p>
                 <p class="text-slate-400 text-sm">
                   Choose between dark and light mode
                 </p>
               </div>
-              <USelect
+              <URadioGroup
                 v-model="selectedTheme"
-                :options="themeOptions"
+                :items="themeOptions"
+                orientation="horizontal"
+                variant="card"
+                color="primary"
                 :ui="{
-                  base: 'bg-slate-800 border-slate-700 text-white',
-                  content: 'z-50',
+                  item: 'border-slate-700 bg-slate-800',
+                  base: 'border-slate-600',
+                  label: 'text-white',
+                  indicator: 'bg-gradient-to-r from-purple-600 to-blue-600',
                 }"
-                portal
                 @update:model-value="handleThemeChange"
               />
             </div>
