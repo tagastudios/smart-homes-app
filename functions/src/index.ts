@@ -11,8 +11,6 @@ if (getApps().length === 0) {
   initializeApp();
 }
 
-// OpenAI API key is hardcoded in processWithOpenAI function
-
 // V2 Functions with comprehensive error handling and inline initialization
 
 interface ReceiptItem {
@@ -271,9 +269,10 @@ VALIDATION RULES:
 `;
 
   try {
-    // Use hardcoded API key for now
-    const apiKey =
-      "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";
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("OPENAI_API_KEY environment variable is not configured");
+    }
 
     const openai = new OpenAI({
       apiKey: apiKey.trim(),
@@ -456,7 +455,7 @@ async function updateReceiptStatusV2(
 
     if (status === "processed" && data) {
       updateData.processedDate = new Date();
-      updateData.ocrData = data;
+      updateData.ocrData = removeUndefinedValues(data);
 
       // Add review flags (only if they exist)
       if (data.needsReview) {
@@ -478,8 +477,12 @@ async function updateReceiptStatusV2(
       } else if (data && typeof data === "object") {
         // Handle error objects with detailed information
         updateData.errorMessage = data.errorMessage || "Unknown error";
-        updateData.errorStack = data.errorStack;
-        updateData.errorTimestamp = data.timestamp;
+        if (data.errorStack) {
+          updateData.errorStack = data.errorStack;
+        }
+        if (data.timestamp) {
+          updateData.errorTimestamp = data.timestamp;
+        }
       }
       console.log("Adding error data to update");
     }
@@ -503,6 +506,24 @@ async function updateReceiptStatusV2(
     );
     console.error("Full error object:", JSON.stringify(error, null, 2));
   }
+}
+
+function removeUndefinedValues<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => removeUndefinedValues(item)) as T;
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).flatMap(([key, nestedValue]) =>
+        nestedValue === undefined
+          ? []
+          : [[key, removeUndefinedValues(nestedValue)]]
+      )
+    ) as T;
+  }
+
+  return value;
 }
 
 // V2: Alternative trigger: Process receipt when document is created

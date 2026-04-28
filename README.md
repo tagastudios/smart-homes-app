@@ -1,94 +1,83 @@
-# Smart Homes - Construction Business Expense Tracker
+# Smart Homes App
 
-A Progressive Web App (PWA) for construction business expense and income tracking built with Nuxt 4, Firebase, and modern UI components.
+A mobile-first Progressive Web App for construction businesses to track expenses, income, projects, receipts, and account activity from one Firebase-backed dashboard.
 
-## Setup
+## Highlights
 
-### Environment Variables
+- Expense and income workflows organized by project and account.
+- Receipt upload and review flow with OCR-assisted parsing.
+- AI chat endpoint for business assistant use cases.
+- Firebase Auth, Firestore, Storage, and Cloud Functions integration.
+- Nuxt 4, Vue 3, Nuxt UI, Tailwind CSS, and PWA support.
 
-Create a `.env` file in the root directory with the following variables:
+## Tech Stack
+
+- Nuxt 4 and Vue 3
+- Firebase Auth, Firestore, Storage, and Cloud Functions
+- Google Cloud Vision for receipt OCR
+- OpenAI API for receipt parsing and assistant responses
+- Nuxt UI, Tailwind CSS, ApexCharts, and VueFire
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in your own values:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
 
 ```env
-# Firebase Configuration
-FIREBASE_API_KEY=your_firebase_api_key
-FIREBASE_AUTH_DOMAIN=your_auth_domain
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_APP_ID=your_app_id
-FIREBASE_STORAGE_BUCKET=your_storage_bucket
-FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-
-# OpenAI API Key (required for AI chat assistant)
-OPENAI_API_KEY=your_openai_api_key
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_APP_ID=
+FIREBASE_STORAGE_BUCKET=
+FIREBASE_MESSAGING_SENDER_ID=
+OPENAI_API_KEY=
 ```
 
-### Install Dependencies
+Never commit `.env` files, Firebase service account JSON files, or provider API keys. Firebase service account credentials should be stored in the deployment environment only.
 
-Make sure to install dependencies:
+## Development
+
+Install dependencies:
 
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Start the local dev server:
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
-
-Build the application for production:
+Build for production:
 
 ```bash
-# npm
-npm run build
-
-# pnpm
 pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
+Preview a production build:
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
 pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Firebase Functions
+
+The functions package is in `functions/`.
+
+```bash
+cd functions
+pnpm install
+pnpm build
+```
+
+The receipt-processing functions initialize Firebase Admin services inside function execution paths, log invocation immediately, wrap logic in `try/catch`, and remove undefined values before Firestore writes.
+
+## Portfolio Notes
+
+This project demonstrates a real business operations workflow: transaction tracking, OCR receipt processing, project/account reporting, and AI-assisted data extraction. The public repository intentionally excludes private keys and deployment-only credentials.
